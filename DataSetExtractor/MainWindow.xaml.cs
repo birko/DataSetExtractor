@@ -29,10 +29,12 @@ namespace DataSetExtractor
 
         private void buttonDataSetLoad_Click(object sender, RoutedEventArgs e)
         {
+            comboBoxEntries.SelectedIndex = -1;
+            comboBoxEntries.Items.Clear();
             loadedFile = null;
             comboBoxEntries.IsEnabled = false;
             Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.Filter = "Zip files (*.zip)|*.zip|CSV files (.csv)|*.csv";
+            dialog.Filter = "DataSet Files (*.zip; *.csv)|*.zip; *.csv|Zip files (*.zip)|*.zip|CSV files (*.csv)|*.csv";
             var result = dialog.ShowDialog();
             if (result.HasValue && result.Value)
             {
@@ -67,8 +69,8 @@ namespace DataSetExtractor
                                 loadedFile = fileNames[i];
                                 using (var zip = new ZipArchive(File.OpenRead(fileNames[i]), ZipArchiveMode.Read))
                                 {
-                                    comboBoxEntries.Items.Clear();
-                                    foreach (var entry in zip.Entries)
+
+                                    foreach (var entry in zip.Entries.Where(x=>x.FullName.EndsWith(".csv")))
                                     {
                                         comboBoxEntries.Items.Add(entry.FullName);
                                     }
@@ -166,7 +168,7 @@ namespace DataSetExtractor
         {
             Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog()
             {
-                FileName = "Document",
+                FileName = "DataSet-" + DateTime.Now.ToString("yyyy-MM-dd"),
                 DefaultExt = ".csv",
                 Filter = "CSV files (.csv)|*.csv|Text documents (.txt)|*.txt"
             };
@@ -275,7 +277,7 @@ namespace DataSetExtractor
                 {
                     var key = splitLine[item.KeyColumn.SourceNumber].Trim().Replace("=", string.Empty).Replace("\"", string.Empty).Replace(" ", string.Empty);
                     key = key.PadLeft(8, '0');
-                    bool contains = (keyList == null && keyList.Length == 0 || keyList.Contains(key));
+                    bool contains = (keyList == null || keyList.Length == 0 || keyList.Contains(key));
                     if (contains || isFisrtLine)
                     {
                         if (isFisrtLine)
@@ -291,7 +293,7 @@ namespace DataSetExtractor
                         for (int i = 0; i < splitLine.Count; i++)
                         {
                             var itemcolumn = item.Output?.FirstOrDefault(x => x.SourceNumber == i);
-                            var index = (!item.FullRow && itemcolumn != null && itemcolumn.Number.HasValue) ? itemcolumn.Number.Value : i;
+                            var index = (!item.FullRow && itemcolumn != null) ? itemcolumn.Number : i;
                             if (item.FullRow || itemcolumn != null)
                             {
                                 datarow[index] = splitLine[i];

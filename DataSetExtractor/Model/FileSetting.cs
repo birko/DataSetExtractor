@@ -24,7 +24,7 @@ namespace DataSetExtractor.Model
     public class OutputColumn : Column, ICloneable
     {
         public string Name { get; set; }
-        public int? Number { get; set; }
+        public int Number { get; set; }
         public bool IsEmptyTest { get; set; } = false;
 
         public override object Clone()

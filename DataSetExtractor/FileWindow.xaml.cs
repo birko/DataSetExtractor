@@ -88,7 +88,14 @@ namespace DataSetExtractor
 
         private void RefreshGrid()
         {
-            dataGridColumns.ItemsSource = FileSetting.Output.OrderBy(x=>x.Number).ToArray();
+            dataGridColumns.ItemsSource = FileSetting.Output.Select(x => new
+            {
+                Number = x.Number + 1,
+                x.Name,
+                EmptyTest = x.IsEmptyTest,
+                SourceNumber = (x.SourceNumber + 1),
+                x.SourceName,
+            }).OrderBy(x => x.Number).ToArray();
             dataGridColumns.Items.Refresh();
         }
 
@@ -96,7 +103,12 @@ namespace DataSetExtractor
         {
             if (comboBoxColumn.SelectedIndex >= 0 && int.TryParse(textBoxColumnNumber.Text, out int number))
             {
-                if (number > FileSetting.Output.Count)
+                number--;
+                if (number < 0)
+                {
+                    number = 0;
+                }
+                else if (number > FileSetting.Output.Count)
                 {
                     number = FileSetting.Output.Count;
                 }
@@ -122,7 +134,7 @@ namespace DataSetExtractor
                 checkBoxtestEmpty.IsChecked = false;
                 comboBoxColumn.SelectedIndex = -1;
                 textBoxColumnName.Text = string.Empty;
-                textBoxColumnNumber.Text = FileSetting.Output.Count.ToString();
+                textBoxColumnNumber.Text = (FileSetting.Output.Count + 1).ToString();
             }
         }
 
@@ -165,11 +177,11 @@ namespace DataSetExtractor
             var grid = (DataGrid)sender;
             if (grid.SelectedIndex >= 0)
             {
-                var item = (OutputColumn)grid.SelectedItem;
+                var item = FileSetting.Output[grid.SelectedIndex];
                 checkBoxtestEmpty.IsChecked = item.IsEmptyTest;
                 comboBoxColumn.SelectedIndex = item.SourceNumber;
                 textBoxColumnName.Text = item.Name;
-                textBoxColumnNumber.Text = item.Number.ToString();
+                textBoxColumnNumber.Text = (item.Number + 1).ToString();
             }
         }
 
