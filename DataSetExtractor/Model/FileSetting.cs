@@ -64,7 +64,7 @@ namespace DataSetExtractor.Model
                 Source = Source,
                 FullRow = FullRow,
                 KeyColumn = (Column)KeyColumn.Clone(),
-                Output = Output.Select(x => (OutputColumn)x.Clone()).ToList(),
+                Output = Output?.Select(x => (OutputColumn)x.Clone()).ToList(),
             };
         }
     }
