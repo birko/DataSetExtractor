@@ -101,6 +101,7 @@ namespace DataSetExtractor
             if (index >= 0 && index < _SelectedFiles.Count)
             {
                 FileSetting fileSetting = _SelectedFiles[index];
+                var cloneFileSetting = (FileSetting)fileSetting.Clone();
                 if (fileSetting != null)
                 {
                     FileWindow window = new FileWindow(fileSetting)
@@ -111,6 +112,10 @@ namespace DataSetExtractor
                     if (result == true)
                     {
                         RefreshGrid();
+                    }
+                    else
+                    {
+                        _SelectedFiles[index] = cloneFileSetting;
                     }
                 }
             }
@@ -169,8 +174,8 @@ namespace DataSetExtractor
             {
                 buttonGenerate.IsEnabled = false;
                 string keysText = textBoxKeyList.Text.Trim();
-                var keyList = keysText.Split(new[] { ",", "\n" }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(x => x != null ? x.Trim().Replace(" ", string.Empty).PadLeft(8, '0') : null)
+                var keyList = keysText.Split(new[] { ",", "\n", ";" }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(x => x?.Trim().Replace(" ", string.Empty).PadLeft(8, '0'))
                         .Where(x => !string.IsNullOrEmpty(x)).Distinct().ToArray();
                 fullCheck = checkBoxFullCheck.IsChecked;
                 firstline = checkBoxFirstLine.IsChecked;
@@ -285,7 +290,7 @@ namespace DataSetExtractor
                         var datarow = new string[rowlenght];
                         for (int i = 0; i < splitLine.Count; i++)
                         {
-                            var itemcolumn = (item.Output != null) ? item.Output.FirstOrDefault(x => x.SourceNumber == i) : null;
+                            var itemcolumn = item.Output?.FirstOrDefault(x => x.SourceNumber == i);
                             var index = (!item.FullRow && itemcolumn != null && itemcolumn.Number.HasValue) ? itemcolumn.Number.Value : i;
                             if (item.FullRow || itemcolumn != null)
                             {

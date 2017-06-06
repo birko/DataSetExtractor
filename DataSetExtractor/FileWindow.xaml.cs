@@ -22,14 +22,14 @@ namespace DataSetExtractor
     /// </summary>
     public partial class FileWindow : Window
     {
-        public Model.FileSetting FileSetting = null;
-        public FileWindow(Model.FileSetting fileSetting)
+        public FileSetting FileSetting = null;
+        public FileWindow(FileSetting fileSetting)
         {
             InitializeComponent();
-            FileSetting = (fileSetting != null) ? fileSetting : new Model.FileSetting();
+            FileSetting = fileSetting ?? new FileSetting();
             if (FileSetting.Output == null)
             {
-                FileSetting.Output = new List<Model.OutputColumn>();
+                FileSetting.Output = new List<OutputColumn>();
             }
             InitUI();
         }
