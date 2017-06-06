@@ -183,6 +183,7 @@ namespace DataSetExtractor
                 {
                     FileSetting.Output.RemoveAt(index);
                 }
+                checkBoxFullRow.IsChecked = (FileSetting.Output.Count == 0);
                 RefreshGrid();
             }
 

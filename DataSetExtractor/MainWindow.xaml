@@ -15,8 +15,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="40*"/>
             <RowDefinition Height="40*"/>
-            <RowDefinition Height="216*"/>
-            <RowDefinition Height="216*"/>
+            <RowDefinition Height="180*"/>
+            <RowDefinition Height="40*"/>
+            <RowDefinition Height="180*"/>
             <RowDefinition Height="40*"/>
         </Grid.RowDefinitions>
         <Label x:Name="labelDataSetFile" Content="DataSet File:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{DynamicResource CommonMargin}"/>
@@ -25,11 +26,11 @@
         <Label x:Name="labelSecectedFiles" Grid.Row="1" Grid.Column="1" Content="Selected files:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="{DynamicResource CommonMargin}"/>
         <Button x:Name="buttonSelectFile" Content="Add File To Export" Grid.Row="1"  Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonSelectFile_Click"/>
         <DataGrid x:Name="dataGridSelectedFiles" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="2" VerticalAlignment="Stretch" Width="Auto" CanUserAddRows="False" MouseDoubleClick="dataGridSelectedFiles_MouseDoubleClick" Grid.ColumnSpan="3" PreviewKeyDown="dataGridSelectedFiles_PreviewKeyDown" />
-        <Label x:Name="labelTINList" Content="IČO:" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="{DynamicResource CommonMargin}" Grid.Row="3"/>
-        <TextBox x:Name="textBoxTINList" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" TextWrapping="Wrap" VerticalAlignment="Stretch" Height="Auto" Grid.Row="3" Width="Auto" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
-        <CheckBox x:Name="checkBoxFullCheck" Content="Full Check" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="3" Grid.Column="2" VerticalAlignment="Stretch" VerticalContentAlignment="Top" IsChecked="False" ToolTip="If Listed IČO is not in data set, it will still be added to export with &quot;No Data&quot; Value"/>
-        <CheckBox x:Name="checkBoxFirstLine" Content="First line" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="4" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
-        <ProgressBar x:Name="progressBarGeenerate" Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="4" VerticalAlignment="Stretch" Width="Auto"/>
-        <Button x:Name="buttonGenerate" Content="Generate" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="4" Click="buttonGenerate_Click"/>
+        <Label x:Name="labelKeyList" Content="Keys:" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="{DynamicResource CommonMargin}" Grid.Row="3"/>
+        <TextBox x:Name="textBoxKeyList" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" TextWrapping="Wrap" VerticalAlignment="Stretch" Height="Auto" Grid.Row="3" Width="Auto" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Grid.RowSpan="2" Grid.ColumnSpan="2"/>
+        <CheckBox x:Name="checkBoxFullCheck" Content="Full Check" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="4" VerticalAlignment="Stretch" VerticalContentAlignment="Top" IsChecked="False" ToolTip="If Listed IČO is not in data set, it will still be added to export with &quot;No Data&quot; Value"/>
+        <CheckBox x:Name="checkBoxFirstLine" Content="First line" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
+        <ProgressBar x:Name="progressBarGeenerate" Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="5" VerticalAlignment="Stretch" Width="Auto"/>
+        <Button x:Name="buttonGenerate" Content="Generate" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="5" Click="buttonGenerate_Click"/>
     </Grid>
 </Window>

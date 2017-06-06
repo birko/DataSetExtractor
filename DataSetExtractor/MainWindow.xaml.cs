@@ -149,8 +149,8 @@ namespace DataSetExtractor
                     return new {
                         x.FullRow,
                         Columns = (!x.FullRow) ? x.Output.Count : (int?)null,
-                        x.FileName,
-                        fileInfo.Name,
+                        Set = x.FileName,
+                        Source = fileInfo.Name,
                     };
                 });
                 dataGridSelectedFiles.IsEnabled = true;
@@ -168,15 +168,15 @@ namespace DataSetExtractor
             if (dlg.ShowDialog() == true)
             {
                 buttonGenerate.IsEnabled = false;
-                string tinText = textBoxTINList.Text.Trim();
-                var tinList = tinText.Split(new[] { ",", "\n" }, StringSplitOptions.RemoveEmptyEntries)
+                string keysText = textBoxKeyList.Text.Trim();
+                var keyList = keysText.Split(new[] { ",", "\n" }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(x => x != null ? x.Trim().Replace(" ", string.Empty).PadLeft(8, '0') : null)
                         .Where(x => !string.IsNullOrEmpty(x)).Distinct().ToArray();
                 fullCheck = checkBoxFullCheck.IsChecked;
                 firstline = checkBoxFirstLine.IsChecked;
                 if (fullCheck != true)
                 {
-                    tinList = tinList.Where(x => x.Length == 8).ToArray();
+                    keyList = keyList.Where(x => x.Length == 8).ToArray();
                 }
                 Dictionary<string, string[]> data = new Dictionary<string, string[]>();
                 buttonGenerate.Content = "Loading Data ...";
@@ -192,13 +192,13 @@ namespace DataSetExtractor
                             var entry = zip.GetEntry(item.FileName);
                             if (entry != null)
                             {
-                                data = LoadData(tinList, item, entry.Open(), data);
+                                data = LoadData(keyList, item, entry.Open(), data);
                             }
                         }
                     }
                     else
                     {
-                        data = LoadData(tinList, item, File.OpenRead(item.Source), data);
+                        data = LoadData(keyList, item, File.OpenRead(item.Source), data);
                     }
                     i++;
                 }
@@ -236,7 +236,7 @@ namespace DataSetExtractor
             }
         }
 
-        private Dictionary<string, string[]> LoadData(string[] tinList, FileSetting item, Stream stream, Dictionary<string, string[]> data)
+        private Dictionary<string, string[]> LoadData(string[] keyList, FileSetting item, Stream stream, Dictionary<string, string[]> data)
         {
             if (data == null)
             {
@@ -245,21 +245,19 @@ namespace DataSetExtractor
 
             var buttonText = buttonGenerate.Content;
             buttonGenerate.Content = "Generating ...";
-            Task.Factory.StartNew(() => { return ProcessStream(item, tinList, stream, data); }).ContinueWith((task) =>
-            {
-            }).Wait();
+            Task.Factory.StartNew(() => { return ProcessStream(item, keyList, stream, data); }).ContinueWith((task) =>{}).Wait();
             buttonGenerate.Content = buttonText;
             progressBarGeenerate.Value = progressBarGeenerate.Maximum;
 
             return data;
         }
 
-        private int ProcessStream(FileSetting item, string[] tinList, Stream entry, Dictionary<string, string[]> data)
+        private int ProcessStream(FileSetting item, string[] keyList, Stream entry, Dictionary<string, string[]> data)
         {
-            return ProcessStream(item, tinList, new Tools.CsvParser(new StreamReader(entry), ';'), data);
+            return ProcessStream(item, keyList, new Tools.CsvParser(new StreamReader(entry), ';'), data);
         }
 
-        private int ProcessStream(FileSetting item, string[] tinList, Tools.CsvParser reader, Dictionary<string, string[]> data)
+        private int ProcessStream(FileSetting item, string[] keyList, Tools.CsvParser reader, Dictionary<string, string[]> data)
         {
             int processed = 0;
             long lineIndex = 0;
@@ -270,17 +268,18 @@ namespace DataSetExtractor
                 var isFisrtLine = (lineIndex == 0 && firstline.Value == true);
                 if (splitLine != null && splitLine.Count > 0)
                 {
-                    var ico = splitLine[item.KeyColumn.SourceNumber].Trim().Replace("=", string.Empty).Replace("\"", string.Empty).Replace(" ", string.Empty);
-                    bool contains = tinList.Contains(ico);
+                    var key = splitLine[item.KeyColumn.SourceNumber].Trim().Replace("=", string.Empty).Replace("\"", string.Empty).Replace(" ", string.Empty);
+                    key = key.PadLeft(8, '0');
+                    bool contains = (keyList == null && keyList.Length == 0 || keyList.Contains(key));
                     if (contains || isFisrtLine)
                     {
                         if (isFisrtLine)
                         {
-                            ico = "########";
+                            key = "########";// ensire fisrt line
                         }
                         if (contains)
                         {
-                            found.Add(ico, splitLine[item.KeyColumn.SourceNumber]);
+                            found.Add(key, splitLine[item.KeyColumn.SourceNumber]);
                         }
                         var rowlenght = (item.FullRow) ? splitLine.Count : (item.Output != null) ? item.Output.Count : 0;
                         var datarow = new string[rowlenght];
@@ -302,13 +301,13 @@ namespace DataSetExtractor
                             }
                         }
                         lastlenght = datarow.Length;
-                        if (!data.ContainsKey(ico))
+                        if (!data.ContainsKey(key))
                         {
-                            data.Add(ico, datarow);
+                            data.Add(key, datarow);
                         }
                         else
                         {
-                            data[ico] = data[ico].Concat(datarow).ToArray();
+                            data[key] = data[key].Concat(datarow).ToArray();
                         }
                     }
                 }
@@ -316,7 +315,7 @@ namespace DataSetExtractor
             }
             if (fullCheck.HasValue && fullCheck.Value)
             {
-                var notfound = tinList.Where(x => !found.ContainsKey(x));
+                var notfound = keyList.Where(x => !found.ContainsKey(x));
                 lineIndex = 0;
                 foreach (var notfounditem in notfound)
                 {
