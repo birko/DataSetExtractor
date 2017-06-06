@@ -1,0 +1,35 @@
+﻿<Window x:Class="DataSetExtractor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DataSetExtractor"
+        mc:Ignorable="d"
+        Title="DataSet Extractor" Height="480" Width="640">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="155*"/>
+            <ColumnDefinition Width="330*"/>
+            <ColumnDefinition Width="125*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40*"/>
+            <RowDefinition Height="40*"/>
+            <RowDefinition Height="216*"/>
+            <RowDefinition Height="216*"/>
+            <RowDefinition Height="40*"/>
+        </Grid.RowDefinitions>
+        <Label x:Name="labelDataSetFile" Content="DataSet File:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{DynamicResource CommonMargin}"/>
+        <ComboBox x:Name="comboBoxEntries" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Height="Auto" IsEnabled="False"/>
+        <Button x:Name="buttonDataSetLoad" Content="Load Source File" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonDataSetLoad_Click"/>
+        <Label x:Name="labelSecectedFiles" Grid.Row="1" Grid.Column="1" Content="Selected files:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="{DynamicResource CommonMargin}"/>
+        <Button x:Name="buttonSelectFile" Content="Add File To Export" Grid.Row="1"  Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonSelectFile_Click"/>
+        <DataGrid x:Name="dataGridSelectedFiles" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="2" VerticalAlignment="Stretch" Width="Auto" CanUserAddRows="False" MouseDoubleClick="dataGridSelectedFiles_MouseDoubleClick" Grid.ColumnSpan="3" PreviewKeyDown="dataGridSelectedFiles_PreviewKeyDown" />
+        <Label x:Name="labelTINList" Content="IČO:" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="{DynamicResource CommonMargin}" Grid.Row="3"/>
+        <TextBox x:Name="textBoxTINList" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" TextWrapping="Wrap" VerticalAlignment="Stretch" Height="Auto" Grid.Row="3" Width="Auto" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+        <CheckBox x:Name="checkBoxFullCheck" Content="Full Check" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="3" Grid.Column="2" VerticalAlignment="Stretch" VerticalContentAlignment="Top" IsChecked="False" ToolTip="If Listed IČO is not in data set, it will still be added to export with &quot;No Data&quot; Value"/>
+        <CheckBox x:Name="checkBoxFirstLine" Content="First line" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="4" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
+        <ProgressBar x:Name="progressBarGeenerate" Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="4" VerticalAlignment="Stretch" Width="Auto"/>
+        <Button x:Name="buttonGenerate" Content="Generate" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="4" Click="buttonGenerate_Click"/>
+    </Grid>
+</Window>
