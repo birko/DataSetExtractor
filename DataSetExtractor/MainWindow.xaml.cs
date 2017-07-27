@@ -229,12 +229,13 @@ namespace DataSetExtractor
                     i++;
                 }
                 buttonGenerate.Content = "Writing file ...";
-                if (data.Any())
+                var outputdata = data.Where(x => x.Value.Any(y => !string.IsNullOrEmpty(y)));
+                if (outputdata.Any())
                 {
                     using (var writer = new StreamWriter(dlg.FileName, false, Encoding.UTF8))
                     {
                         int line = 0;
-                        foreach (var kvp in data.OrderBy(x => x.Key))
+                        foreach (var kvp in outputdata.OrderBy(x => x.Key))
                         {
                             writer.WriteLine(string.Join(";", kvp.Value.Select(x => "\"" + x + "\"")));
                             line++;
@@ -342,25 +343,24 @@ namespace DataSetExtractor
                 }
                 lineIndex++;
             }
-            if (fullCheck.HasValue && fullCheck.Value)
+            var notfound = keyList.Where(x => !found.ContainsKey(x));
+            foreach (var notfounditem in notfound)
             {
-                var notfound = keyList.Where(x => !found.ContainsKey(x));
-                lineIndex = 0;
-                foreach (var notfounditem in notfound)
+                var datarow = new string[lastlength];
+                if (fullCheck.HasValue && fullCheck.Value)
                 {
-                    var datarow = new string[lastlength];
                     datarow[0] = "Bez dát";
-                    if (!data.ContainsKey(notfounditem))
-                    {
-                        data.Add(notfounditem, datarow);
-                    }
-                    else
-                    {
-                        data[notfounditem] = data[notfounditem].Concat(datarow).ToArray();
-                    }
-                    lineIndex++;
-                    processed++;
                 }
+                if (!data.ContainsKey(notfounditem))
+                {
+                    data.Add(notfounditem, datarow);
+                }
+                else
+                {
+                    data[notfounditem] = data[notfounditem].Concat(datarow).ToArray();
+                }
+                lineIndex++;
+                processed++;
             }
             return processed;
         }
