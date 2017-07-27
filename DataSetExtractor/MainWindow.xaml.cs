@@ -21,6 +21,8 @@ namespace DataSetExtractor
         private List<FileSetting> _SelectedFiles { get; set; } = new List<FileSetting>();
         private bool? firstline;
         private bool? fullCheck = false;
+        private bool? keyLengthCheck = true;
+        private int? keyLength = 8;
 
         public MainWindow()
         {
@@ -175,15 +177,32 @@ namespace DataSetExtractor
             if (dlg.ShowDialog() == true)
             {
                 buttonGenerate.IsEnabled = false;
-                string keysText = textBoxKeyList.Text.Trim();
-                var keyList = keysText.Split(new[] { ",", "\n", ";" }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(x => x?.Trim().Replace(" ", string.Empty).PadLeft(8, '0'))
-                        .Where(x => !string.IsNullOrEmpty(x)).Distinct().ToArray();
                 fullCheck = checkBoxFullCheck.IsChecked;
                 firstline = checkBoxFirstLine.IsChecked;
-                if (fullCheck != true)
+                keyLengthCheck = checkBoxKeyLength.IsChecked;
+
+                if (keyLengthCheck != true)
                 {
-                    keyList = keyList.Where(x => x.Length == 8).ToArray();
+                    keyLength = null;
+                }
+                else if (int.TryParse(textBoxKeyLength.Text?.Trim(), out int result))
+                {
+                    keyLength = result;
+                }
+                string keysText = textBoxKeyList.Text.Trim();
+                var keyList = keysText.Split(new[] { ",", "\n", ";" }, StringSplitOptions.RemoveEmptyEntries)
+                       .Select(x => {
+                           var result = x?.Trim().Replace(" ", string.Empty);
+                           if (keyLength != null)
+                           {
+                               result = result?.PadLeft(keyLength.Value, '0');
+                           }
+                           return result;
+                       })
+                       .Where(x => !string.IsNullOrEmpty(x)).Distinct().ToArray();
+                if (keyLengthCheck != true && keyLength != null)
+                {
+                    keyList = keyList.Where(x => x.Length == keyLength).ToArray();
                 }
                 Dictionary<string, string[]> data = new Dictionary<string, string[]>();
                 buttonGenerate.Content = "Loading Data ...";
@@ -269,27 +288,30 @@ namespace DataSetExtractor
             int processed = 0;
             long lineIndex = 0;
             Dictionary<string, string> found = new Dictionary<string, string>();
-            int lastlenght = 0;
+            int lastlength = 0;
             foreach (var splitLine in reader.Parse())
             {
                 var isFisrtLine = (lineIndex == 0 && firstline.Value == true);
                 if (splitLine != null && splitLine.Count > 0)
                 {
                     var key = splitLine[item.KeyColumn.SourceNumber].Trim().Replace("=", string.Empty).Replace("\"", string.Empty).Replace(" ", string.Empty);
-                    key = key.PadLeft(8, '0');
+                    if (keyLength != null)
+                    {
+                        key = key.PadLeft(keyLength.Value, '0');
+                    }
                     bool contains = (keyList == null || keyList.Length == 0 || keyList.Contains(key));
                     if (contains || isFisrtLine)
                     {
                         if (isFisrtLine)
                         {
-                            key = "########";// ensire fisrt line
+                            key = "########";// ensure fisrt line
                         }
-                        if (contains)
+                        if (contains && !found.ContainsKey(key))
                         {
                             found.Add(key, splitLine[item.KeyColumn.SourceNumber]);
                         }
-                        var rowlenght = (item.FullRow) ? splitLine.Count : (item.Output != null) ? item.Output.Count : 0;
-                        var datarow = new string[rowlenght];
+                        var rowlength = (item.FullRow) ? splitLine.Count : (item.Output != null) ? item.Output.Count : 0;
+                        var datarow = new string[rowlength];
                         for (int i = 0; i < splitLine.Count; i++)
                         {
                             var itemcolumn = item.Output?.FirstOrDefault(x => x.SourceNumber == i);
@@ -307,7 +329,7 @@ namespace DataSetExtractor
                                 }
                             }
                         }
-                        lastlenght = datarow.Length;
+                        lastlength = datarow.Length;
                         if (!data.ContainsKey(key))
                         {
                             data.Add(key, datarow);
@@ -326,7 +348,7 @@ namespace DataSetExtractor
                 lineIndex = 0;
                 foreach (var notfounditem in notfound)
                 {
-                    var datarow = new string[lastlenght];
+                    var datarow = new string[lastlength];
                     datarow[0] = "Bez dát";
                     if (!data.ContainsKey(notfounditem))
                     {
