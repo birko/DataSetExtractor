@@ -1,4 +1,5 @@
 ﻿using DataSetExtractor.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+
 
 namespace DataSetExtractor
 {
@@ -160,11 +162,16 @@ namespace DataSetExtractor
         {
             if (comboBoxKeyColumn.SelectedIndex >=0)
             {
-                FileSetting.KeyColumn.SourceNumber = comboBoxKeyColumn.SelectedIndex;
-                FileSetting.FullRow = checkBoxFullRow.IsChecked == true;
+                FinalizeFileSettings();
                 DialogResult = true;
                 Close();
             }
+        }
+
+        private void FinalizeFileSettings()
+        {
+            FileSetting.KeyColumn.SourceNumber = comboBoxKeyColumn.SelectedIndex;
+            FileSetting.FullRow = checkBoxFullRow.IsChecked == true;
         }
 
         private void dataGridColumns_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -217,6 +224,37 @@ namespace DataSetExtractor
                 RefreshGrid();
             }
 
+        }
+
+        private void buttonConfig_Click(object sender, RoutedEventArgs e)
+        {
+            FinalizeFileSettings();
+            var text = JsonConvert.SerializeObject(FileSetting, Formatting.Indented);
+            OutputWindow window = new OutputWindow(text)
+            {
+                Owner = this
+            };
+            var result = window.ShowDialog();
+            if (window.OutputText != text)
+            {
+                var dialogResult = MessageBox.Show("Want to overide setting?", "File Settings override", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No, MessageBoxOptions.None);
+                if (dialogResult == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        var clone = (FileSetting)FileSetting.Clone();
+                        FileSetting.Import(JsonConvert.DeserializeObject<FileSetting>(window.OutputText));
+                        FileSetting.Source = clone.Source;
+                        FileSetting.FileName = clone.FileName;
+                        InitUI();
+                        comboBoxKeyColumn.SelectedIndex = FileSetting.KeyColumn.SourceNumber;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    }
+                }
+            }
         }
     }
 }

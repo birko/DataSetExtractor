@@ -19,17 +19,28 @@ namespace DataSetExtractor
     /// </summary>
     public partial class OutputWindow : Window
     {
-        private string _text = null;
+        public string Text = null;
+        public string OutputText
+        {
+            get
+            {
+                return textBoxKeyOutput.Text;
+            }
+            set
+            {
+                textBoxKeyOutput.Text = value;
+            }
+        }
         public OutputWindow(string text)
         {
             InitializeComponent();
-            _text = text;
+            Text = text;
             RefreshTextBox();
         }
 
         private void RefreshTextBox()
         {
-            textBoxKeyOutput.Text = _text;
+            OutputText = Text;
         }
 
         private void buttonRefresh_Click(object sender, RoutedEventArgs e)
@@ -39,7 +50,7 @@ namespace DataSetExtractor
 
         private void buttonCopy_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(_text);
+            Clipboard.SetText(Text);
         }
     }
 }

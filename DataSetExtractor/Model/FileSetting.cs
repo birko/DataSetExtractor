@@ -67,5 +67,18 @@ namespace DataSetExtractor.Model
                 Output = Output?.Select(x => (OutputColumn)x.Clone()).ToList(),
             };
         }
+
+        public void Import(FileSetting fileSetting)
+        {
+            if (fileSetting != null)
+            {
+                FileName = fileSetting.FileName;
+                Type = fileSetting.Type;
+                Source = fileSetting.Source;
+                FullRow = fileSetting.FullRow;
+                KeyColumn = fileSetting.KeyColumn;
+                Output = fileSetting.Output;
+            }
+        }
     }
 }

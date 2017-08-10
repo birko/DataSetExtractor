@@ -1,4 +1,5 @@
 ﻿using DataSetExtractor.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -266,7 +267,7 @@ namespace DataSetExtractor
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show(ex.Message, "File Write Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                            MessageBox.Show(ex.Message, "File Write Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.None);
                             ShowOutputWindow(outputdata);
                         }
                     }
@@ -408,6 +409,32 @@ namespace DataSetExtractor
                     _SelectedFiles.RemoveAt(index);
                 }
                 RefreshGrid();
+            }
+        }
+
+        private void buttonShowConfig_Click(object sender, RoutedEventArgs e)
+        {
+            var text = JsonConvert.SerializeObject(_SelectedFiles, Formatting.Indented);
+            OutputWindow window = new OutputWindow(text)
+            {
+                Owner = this
+            };
+            var result = window.ShowDialog();
+            if (window.OutputText != text)
+            {
+                var dialogResult = MessageBox.Show("Want to overide setting?", "File Settings override", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No, MessageBoxOptions.None);
+                if (dialogResult == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        _SelectedFiles = JsonConvert.DeserializeObject<List<FileSetting>>(window.OutputText);
+                        RefreshGrid();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    }
+                }
             }
         }
     }

@@ -33,9 +33,10 @@
         <CheckBox x:Name="checkBoxFullCheck" Content="Full Check" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="4" VerticalAlignment="Stretch" VerticalContentAlignment="Top" IsChecked="False" ToolTip="If Listed IČO is not in data set, it will still be added to export with &quot;No Data&quot; Value"/>
         <CheckBox x:Name="checkBoxKeyLength" Content="Check Key Length" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
         <TextBox x:Name="textBoxKeyLength" Grid.Column="1" Text="8" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" TextWrapping="Wrap" VerticalAlignment="Stretch" Height="Auto" Grid.Row="5" Width="Auto" AcceptsReturn="True" HorizontalContentAlignment="Right" Grid.ColumnSpan="2" />
-        <CheckBox x:Name="checkBoxFirstLine" Content="First line" HorizontalAlignment="Stretch" Margin="5,5,5,4.5" Grid.Row="6" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
-        <ProgressBar x:Name="progressBarGeenerate" Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="5,5,5,4.5" Grid.Row="6" VerticalAlignment="Stretch" Width="Auto"/>
-        <CheckBox x:Name="checkBoxFile" Content="File Output" Grid.Column="2" HorizontalAlignment="Stretch" Margin="5,5,5,4.5" Grid.Row="6" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
-        <Button x:Name="buttonGenerate" Content="Generate" Grid.Column="3" HorizontalAlignment="Stretch" Margin="5,5,5,4.5" VerticalAlignment="Stretch" Width="Auto" Grid.Row="6" Click="buttonGenerate_Click"/>
+        <Button x:Name="buttonShowConfig" Content="Show Config" Grid.Column="3" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="5" Click="buttonShowConfig_Click"/>
+        <CheckBox x:Name="checkBoxFirstLine" Content="First line" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="6" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
+        <ProgressBar x:Name="progressBarGeenerate" Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="6" VerticalAlignment="Stretch" Width="Auto"/>
+        <CheckBox x:Name="checkBoxFile" Content="File Output" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="6" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
+        <Button x:Name="buttonGenerate" Content="Generate" Grid.Column="3" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="6" Click="buttonGenerate_Click"/>
     </Grid>
 </Window>
