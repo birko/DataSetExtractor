@@ -43,6 +43,23 @@ namespace DataSetExtractor
             ReadFirstRow();
         }
 
+        private string GetExcelColumnName(int columnNumber)
+        {
+            int dividend = columnNumber;
+            string columnName = String.Empty;
+            int modulo;
+            int positionA = 'A';
+            int AlphabetLength = 'Z' - positionA + 1;
+            while (dividend > 0)
+            {
+                modulo = (dividend - 1) % AlphabetLength;
+                columnName = Convert.ToChar(positionA + modulo).ToString() + columnName;
+                dividend = (dividend - modulo) / AlphabetLength;
+            }
+
+            return columnName;
+        }
+
         private void ReadFirstRow()
         {
             string[] row = null;
@@ -67,8 +84,9 @@ namespace DataSetExtractor
             {
                 for (int i = 0; i < row.Length; i++)
                 {
-                    comboBoxKeyColumn.Items.Add(string.Format("{0:####} - {1}", i + 1, row[i]));
-                    comboBoxColumn.Items.Add(string.Format("{0:####} - {1}", i + 1, row[i]));
+                    string columnName = GetExcelColumnName(i + 1);
+                    comboBoxKeyColumn.Items.Add(string.Format("{0:####} - [{1}] {2}", i + 1, columnName, row[i]));
+                    comboBoxColumn.Items.Add(string.Format("{0:####} - [{1}]{2}", i + 1, columnName, row[i]));
                 }
             }
         }
@@ -165,8 +183,8 @@ namespace DataSetExtractor
                 var value = (string)comboBoxColumn.SelectedValue;
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var fisrtindex = value.IndexOf(" - ");
-                    return value.Substring(fisrtindex + 3);
+                    var fisrtindex = value.IndexOf("]");
+                    return value.Substring(fisrtindex + 1);
                 }
             }
             return null;
