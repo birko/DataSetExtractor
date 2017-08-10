@@ -174,7 +174,7 @@ namespace DataSetExtractor
                 DefaultExt = ".csv",
                 Filter = "CSV files (.csv)|*.csv|Text documents (.txt)|*.txt"
             };
-            if (dlg.ShowDialog() == true)
+            if (checkBoxFile.IsChecked != true || (checkBoxFile.IsChecked == true && dlg.ShowDialog() == true))
             {
                 buttonGenerate.IsEnabled = false;
                 fullCheck = checkBoxFullCheck.IsChecked;
@@ -229,38 +229,70 @@ namespace DataSetExtractor
                     i++;
                 }
                 buttonGenerate.Content = "Writing file ...";
+
                 var outputdata = data.Where(x => x.Value.Any(y => !string.IsNullOrEmpty(y)));
                 if (outputdata.Any())
                 {
-                    using (var writer = new StreamWriter(dlg.FileName, false, Encoding.UTF8))
+                    if (checkBoxFile.IsChecked == true)
                     {
-                        int line = 0;
-                        foreach (var kvp in outputdata.OrderBy(x => x.Key))
+                        try
                         {
-                            writer.WriteLine(string.Join(";", kvp.Value.Select(x => "\"" + x + "\"")));
-                            line++;
-                            if (line % 5000 == 0)
+                            using (var writer = new StreamWriter(dlg.FileName, false, Encoding.UTF8))
                             {
+                                int line = 0;
+                                foreach (var kvp in outputdata.OrderBy(x => x.Key))
+                                {
+                                    writer.WriteLine(string.Join(";", kvp.Value.Select(x => "\"" + x + "\"")));
+                                    line++;
+                                    if (line % 5000 == 0)
+                                    {
+                                        writer.Flush();
+                                        buttonGenerate.Content = "Writing file .";
+                                    }
+                                    if (line % 3 == 1)
+                                    {
+                                    }
+                                    else if (line % 3 == 2)
+                                    {
+                                        buttonGenerate.Content = "Writing file ..";
+                                    }
+                                    if (line % 3 == 0)
+                                    {
+                                        buttonGenerate.Content = "Writing file ...";
+                                    }
+                                }
                                 writer.Flush();
-                                buttonGenerate.Content = "Writing file .";
-                            }
-                            if (line % 3 == 1)
-                            {
-                            } else if (line % 3 == 2)
-                            {
-                                buttonGenerate.Content = "Writing file ..";
-                            }
-                            if (line % 3 == 0)
-                            {
-                                buttonGenerate.Content = "Writing file ...";
                             }
                         }
-                        writer.Flush();
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message, "File Write Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.DefaultDesktopOnly);
+                            ShowOutputWindow(outputdata);
+                        }
+                    }
+                    else
+                    {
+                        ShowOutputWindow(outputdata);
                     }
                 }
                 buttonGenerate.Content = "Generate";
                 buttonGenerate.IsEnabled = true;
             }
+        }
+
+        private void ShowOutputWindow(IEnumerable<KeyValuePair<string, string[]>> outputdata)
+        {
+            StringBuilder text = new StringBuilder();
+            foreach (var kvp in outputdata.OrderBy(x => x.Key))
+            {
+                text.AppendLine(string.Join(";", kvp.Value.Select(x => "\"" + x + "\"")));
+            }
+            OutputWindow window = new OutputWindow(text.ToString())
+            {
+                Owner = this
+            };
+
+            var result = window.ShowDialog();
         }
 
         private Dictionary<string, string[]> LoadData(string[] keyList, FileSetting item, Stream stream, Dictionary<string, string[]> data)
