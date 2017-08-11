@@ -8,18 +8,18 @@
         Title="FileWindow" Height="430" Width="500" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="120*"/>
+            <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
             <ColumnDefinition Width="300*"/>
-            <ColumnDefinition Width="120*"/>
+            <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40*"/>
-            <RowDefinition Height="40*"/>
-            <RowDefinition Height="40*"/>
-            <RowDefinition Height="40*"/>
-            <RowDefinition Height="40*"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
             <RowDefinition Height="200*"/>
-            <RowDefinition Height="40*"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
         </Grid.RowDefinitions>
         <Label Content="Key column: " HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch"/>
         <ComboBox x:Name="comboBoxKeyColumn" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" IsEditable="True"/>

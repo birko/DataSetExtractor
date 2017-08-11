@@ -8,19 +8,19 @@
         Title="DataSet Extractor" Height="520" Width="640" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="135*"/>
-            <ColumnDefinition Width="270*"/>
-            <ColumnDefinition Width="100*"/>
-            <ColumnDefinition Width="130*"/>
+            <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
+            <ColumnDefinition Width="200*"/>
+            <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
+            <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40*"/>
-            <RowDefinition Height="40*"/>
-            <RowDefinition Height="180*"/>
-            <RowDefinition Height="40*"/>
-            <RowDefinition Height="180*"/>
-            <RowDefinition Height="40*"/>
-            <RowDefinition Height="40*"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="200*"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="200*"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
         </Grid.RowDefinitions>
         <Label x:Name="labelDataSetFile" Content="DataSet File:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{DynamicResource CommonMargin}"/>
         <ComboBox x:Name="comboBoxEntries" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Height="Auto" IsEnabled="False" Grid.ColumnSpan="2"/>

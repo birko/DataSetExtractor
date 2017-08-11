@@ -4,8 +4,8 @@
              xmlns:local="clr-namespace:DataSetExtractor"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-
         <Thickness x:Key="CommonMargin">5,5,5,5</Thickness>
-
+        <GridLength x:Key="GridRowStatic">40</GridLength>
+        <GridLength x:Key="GridColumnStatic">130</GridLength>
     </Application.Resources>
 </Application>

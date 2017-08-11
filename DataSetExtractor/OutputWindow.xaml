@@ -8,15 +8,16 @@
         Title="OutputWindow" Height="480" Width="640" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50*"/>
-            <ColumnDefinition Width="50*"/>
+            <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
+            <ColumnDefinition Width="200*"/>
+            <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="90*"/>
-            <RowDefinition Height="10*"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
         </Grid.RowDefinitions>
-        <TextBox x:Name="textBoxKeyOutput" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Height="Auto" Width="Auto" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.ColumnSpan="2"/>
-        <Button x:Name="buttonRefresh" Content="Reload Text" Grid.Row="1"   HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonRefresh_Click"/>
-        <Button x:Name="buttonCopy" Content="Copy To Clipboard" Grid.Row="1"  Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonCopy_Click"/>
+        <TextBox x:Name="textBoxKeyOutput" HorizontalAlignment="Stretch" Margin="5,5,5,4.5" VerticalAlignment="Stretch" Height="Auto" Width="Auto" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.ColumnSpan="4"/>
+        <Button x:Name="buttonRefresh" Content="Reload Text" Grid.Row="1"   HorizontalAlignment="Stretch" Margin="5,5.5,5.5,4.5" VerticalAlignment="Stretch" Width="Auto" Click="buttonRefresh_Click" />
+        <Button x:Name="buttonCopy" Content="Copy To Clipboard" Grid.Row="1"  Grid.Column="2" HorizontalAlignment="Stretch" Margin="4.5,5.5,5,4.5" VerticalAlignment="Stretch" Width="Auto" Click="buttonCopy_Click"/>
     </Grid>
 </Window>
