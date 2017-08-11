@@ -205,12 +205,12 @@ namespace DataSetExtractor
                 {
                     keyList = keyList.Where(x => x.Length == keyLength).ToArray();
                 }
-                Dictionary<string, string[]> data = new Dictionary<string, string[]>();
+                Dictionary<string, List<string[]>> data = new Dictionary<string, List<string[]>>();
                 buttonGenerate.Content = "Loading Data ...";
-                var i = 1;
                 var count = _SelectedFiles.Count;
-                foreach (var item in _SelectedFiles)
+                for (int i = 0; i < count; i++)
                 {
+                    var item = _SelectedFiles[i];
                     buttonGenerate.Content = "Loading Data (" + i + "/" + count + ") ...";
                     if (item.Type == FileType.Zip)
                     {
@@ -219,21 +219,42 @@ namespace DataSetExtractor
                             var entry = zip.GetEntry(item.FileName);
                             if (entry != null)
                             {
-                                data = LoadData(keyList, item, entry.Open(), data);
+                                data = LoadData(keyList, item, entry.Open(), data, i);
                             }
                         }
                     }
                     else
                     {
-                        data = LoadData(keyList, item, File.OpenRead(item.Source), data);
+                        data = LoadData(keyList, item, File.OpenRead(item.Source), data, i);
                     }
-                    i++;
                 }
                 buttonGenerate.Content = "Writing file ...";
 
-                var outputdata = data.Where(x => x.Value.Any(y => !string.IsNullOrEmpty(y)));
+                var outputdata = data.Where(x => x.Value.Any(y => y != null && y.Length > 0 && y.Any(z => !string.IsNullOrEmpty(z)))).ToDictionary(x => x.Key, x => x.Value);
                 if (outputdata.Any())
                 {
+                    var rowItem = outputdata.First();
+                    var sectionsCount = rowItem.Value.Count;
+                    int[] maxColumns = new int[sectionsCount];
+                    for (int i = 0; i < sectionsCount; i++)
+                    {
+                        maxColumns[i] = outputdata.Max(x => x.Value[i].Length);
+                    }
+                    Dictionary<string, string[]> finalData = new Dictionary<string, string[]>();
+                    foreach (var kvp in outputdata.OrderBy(x => x.Key))
+                    {
+                        string[] row = new string[0];
+                        for (int i = 0; i < sectionsCount; i++)
+                        {
+                            string[] subrow = new string[maxColumns[i]];
+                            for (int j = 0; j < kvp.Value[i].Length; j ++)
+                            {
+                                subrow[j] = kvp.Value[i][j];
+                            }
+                            row = row.Concat(subrow).ToArray();
+                        }
+                        finalData.Add(kvp.Key, row);
+                    }
                     if (checkBoxFile.IsChecked == true)
                     {
                         try
@@ -241,7 +262,7 @@ namespace DataSetExtractor
                             using (var writer = new StreamWriter(dlg.FileName, false, Encoding.UTF8))
                             {
                                 int line = 0;
-                                foreach (var kvp in outputdata.OrderBy(x => x.Key))
+                                foreach (var kvp in finalData.OrderBy(x => x.Key))
                                 {
                                     writer.WriteLine(string.Join(";", kvp.Value.Select(x => "\"" + x + "\"")));
                                     line++;
@@ -268,12 +289,12 @@ namespace DataSetExtractor
                         catch (Exception ex)
                         {
                             MessageBox.Show(ex.Message, "File Write Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.None);
-                            ShowOutputWindow(outputdata);
+                            ShowOutputWindow(finalData);
                         }
                     }
                     else
                     {
-                        ShowOutputWindow(outputdata);
+                        ShowOutputWindow(finalData);
                     }
                 }
                 buttonGenerate.Content = "Generate";
@@ -296,28 +317,28 @@ namespace DataSetExtractor
             var result = window.ShowDialog();
         }
 
-        private Dictionary<string, string[]> LoadData(string[] keyList, FileSetting item, Stream stream, Dictionary<string, string[]> data)
+        private Dictionary<string, List<string[]>> LoadData(string[] keyList, FileSetting item, Stream stream, Dictionary<string, List<string[]>> data, int filePosition)
         {
             if (data == null)
             {
-                data = new Dictionary<string, string[]>();
+                data = new Dictionary<string, List<string[]>>();
             }
 
             var buttonText = buttonGenerate.Content;
             buttonGenerate.Content = "Generating ...";
-            Task.Factory.StartNew(() => { return ProcessStream(item, keyList, stream, data); }).ContinueWith((task) =>{}).Wait();
+            Task.Factory.StartNew(() => { return ProcessStream(item, keyList, stream, data, filePosition); }).ContinueWith((task) =>{}).Wait();
             buttonGenerate.Content = buttonText;
             progressBarGeenerate.Value = progressBarGeenerate.Maximum;
 
             return data;
         }
 
-        private int ProcessStream(FileSetting item, string[] keyList, Stream entry, Dictionary<string, string[]> data)
+        private int ProcessStream(FileSetting item, string[] keyList, Stream entry, Dictionary<string, List<string[]>> data, int filePosition)
         {
-            return ProcessStream(item, keyList, new Tools.CsvParser(new StreamReader(entry), ';'), data);
+            return ProcessStream(item, keyList, new Tools.CsvParser(new StreamReader(entry), ';'), data, filePosition);
         }
 
-        private int ProcessStream(FileSetting item, string[] keyList, Tools.CsvParser reader, Dictionary<string, string[]> data)
+        private int ProcessStream(FileSetting item, string[] keyList, Tools.CsvParser reader, Dictionary<string, List<string[]>> data, int filePosition)
         {
             int processed = 0;
             long lineIndex = 0;
@@ -366,12 +387,14 @@ namespace DataSetExtractor
                         lastlength = datarow.Length;
                         if (!data.ContainsKey(key))
                         {
-                            data.Add(key, datarow);
+                            var list = new List<string[]>();
+                            for (int i = 0; i < _SelectedFiles.Count; i++)
+                            {
+                                list.Add(new string[0]);
+                            }
+                            data.Add(key, list);
                         }
-                        else
-                        {
-                            data[key] = data[key].Concat(datarow).ToArray();
-                        }
+                        data[key][filePosition] = datarow;
                     }
                 }
                 lineIndex++;
@@ -379,19 +402,22 @@ namespace DataSetExtractor
             var notfound = keyList.Where(x => !found.ContainsKey(x));
             foreach (var notfounditem in notfound)
             {
-                var datarow = new string[lastlength];
+                var datarow = new string[0];
                 if (fullCheck.HasValue && fullCheck.Value)
                 {
+                    datarow = new string[1];
                     datarow[0] = "Bez dát";
                 }
                 if (!data.ContainsKey(notfounditem))
                 {
-                    data.Add(notfounditem, datarow);
+                    var list = new List<string[]>();
+                    for (int i = 0; i < _SelectedFiles.Count; i++)
+                    {
+                        list.Add(new string[0]);
+                    }
+                    data.Add(notfounditem, list);
                 }
-                else
-                {
-                    data[notfounditem] = data[notfounditem].Concat(datarow).ToArray();
-                }
+                data[notfounditem][filePosition] = datarow;
                 lineIndex++;
                 processed++;
             }
