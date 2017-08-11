@@ -427,7 +427,22 @@ namespace DataSetExtractor
                 {
                     try
                     {
-                        _SelectedFiles = JsonConvert.DeserializeObject<List<FileSetting>>(window.OutputText);
+                        var files = JsonConvert.DeserializeObject<List<FileSetting>>(window.OutputText);
+                        var count = (files != null) ? files.Count : 0;
+                        if (_SelectedFiles != null && _SelectedFiles.Count > count)
+                        {
+                            count = _SelectedFiles.Count;
+                        }
+                        for (int i = 0; i < count; i++)
+                        {
+                            if ((_SelectedFiles != null && _SelectedFiles.Count > i) && (files != null && files.Count > i))
+                            {
+                                var clone = (FileSetting)_SelectedFiles[i].Clone();
+                                _SelectedFiles[i].Import(files[i]);
+                                _SelectedFiles[i].FileName = clone.FileName;
+                                _SelectedFiles[i].Source = clone.Source;
+                            }
+                        }
                         RefreshGrid();
                     }
                     catch (Exception ex)
