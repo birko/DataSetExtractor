@@ -25,6 +25,7 @@ namespace DataSetExtractor
     public partial class FileWindow : Window
     {
         public FileSetting FileSetting = null;
+        public List<string> ColumnNames = null;
         public FileWindow(FileSetting fileSetting)
         {
             InitializeComponent();
@@ -38,7 +39,6 @@ namespace DataSetExtractor
 
         private void InitUI()
         {
-            comboBoxKeyColumn.SelectedIndex = FileSetting.KeyColumn.SourceNumber;
             checkBoxFullRow.IsChecked = FileSetting.FullRow;
             textBoxColumnNumber.Text = FileSetting.Output.Count.ToString();
             RefreshGrid();
@@ -62,34 +62,48 @@ namespace DataSetExtractor
             return columnName;
         }
 
-        private void ReadFirstRow()
+        private void ReadFirstRow(bool force = false)
         {
-            string[] row = null;
-            if (FileSetting.Type == FileType.Zip)
+            if (FileSetting != null)
             {
-                using (var zip = new ZipArchive(File.OpenRead(FileSetting.Source), ZipArchiveMode.Read))
+                if (force || ColumnNames == null || !ColumnNames.Any())
                 {
-                    var entry = zip.GetEntry(FileSetting.FileName);
-                    if (entry != null)
+                    if (force || ColumnNames == null)
                     {
-                        row = GetRow(new StreamReader(entry.Open()));
+                        ColumnNames = new List<string>();
+                    }
+                    string[] row = null;
+                    if (FileSetting.Type == FileType.Zip)
+                    {
+                        using (var zip = new ZipArchive(File.OpenRead(FileSetting.Source), ZipArchiveMode.Read))
+                        {
+                            var entry = zip.GetEntry(FileSetting.FileName);
+                            if (entry != null)
+                            {
+                                row = GetRow(new StreamReader(entry.Open()));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source)));
+                    }
+                    ColumnNames.AddRange(row);
+                }
+                comboBoxKeyColumn.Items.Clear();
+                comboBoxColumn.Items.Clear();
+                if (ColumnNames != null && ColumnNames.Any())
+                {
+                    bool excelIndex = checkBoxExcelIndex.IsChecked == true;
+                    for (int i = 0; i < ColumnNames.Count; i++)
+                    {
+                        string columnIndex = (excelIndex) ? GetExcelColumnName(i + 1).PadRight(5) : (i + 1).ToString().PadRight(5);
+                        string columnName = (!string.IsNullOrEmpty(ColumnNames[i])) ? ColumnNames[i] : "NO NAME";
+                        comboBoxKeyColumn.Items.Add(string.Format("{0} - {1}", columnIndex, ColumnNames[i]));
+                        comboBoxColumn.Items.Add(string.Format("{0} - {1}", columnIndex, ColumnNames[i]));
                     }
                 }
-            }
-            else
-            {
-                row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source)));
-            }
-            comboBoxKeyColumn.Items.Clear();
-            comboBoxColumn.Items.Clear();
-            if (row != null && row.Any())
-            {
-                for (int i = 0; i < row.Length; i++)
-                {
-                    string columnName = GetExcelColumnName(i + 1);
-                    comboBoxKeyColumn.Items.Add(string.Format("{0:####} - [{1}] {2}", i + 1, columnName, row[i]));
-                    comboBoxColumn.Items.Add(string.Format("{0:####} - [{1}]{2}", i + 1, columnName, row[i]));
-                }
+                comboBoxKeyColumn.SelectedIndex = FileSetting.KeyColumn.SourceNumber;
             }
         }
 
@@ -190,8 +204,9 @@ namespace DataSetExtractor
                 var value = (string)comboBoxColumn.SelectedValue;
                 if (!string.IsNullOrEmpty(value))
                 {
-                    var fisrtindex = value.IndexOf("]");
-                    return value.Substring(fisrtindex + 1);
+                    string separator = " - ";
+                    var fisrtindex = value.IndexOf(separator);
+                    return value.Substring(fisrtindex + separator.Length);
                 }
             }
             return null;
@@ -255,6 +270,16 @@ namespace DataSetExtractor
                     }
                 }
             }
+        }
+
+        private void checkBoxExcelIndex_Checked(object sender, RoutedEventArgs e)
+        {
+            ReadFirstRow();
+        }
+
+        private void checkBoxExcelIndex_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ReadFirstRow();
         }
     }
 }

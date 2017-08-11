@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DataSetExtractor"
         mc:Ignorable="d"
-        Title="FileWindow" Height="400" Width="500" WindowStartupLocation="CenterOwner">
+        Title="FileWindow" Height="430" Width="500" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="155*"/>
-            <ColumnDefinition Width="330*"/>
-            <ColumnDefinition Width="125*"/>
+            <ColumnDefinition Width="120*"/>
+            <ColumnDefinition Width="300*"/>
+            <ColumnDefinition Width="120*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="40*"/>
@@ -24,6 +24,7 @@
         <Label Content="Key column: " HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch"/>
         <ComboBox x:Name="comboBoxKeyColumn" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" IsEditable="True"/>
         <CheckBox x:Name="checkBoxFullRow" Content="Copy full row" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Column="2" VerticalAlignment="Stretch" VerticalContentAlignment="Center" ToolTip="If not checked only selected rows are copied"/>
+        <CheckBox x:Name="checkBoxExcelIndex" Content="Excel Index" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Column="0"  Grid.Row="1"  VerticalAlignment="Stretch" VerticalContentAlignment="Center" ToolTip="If not checked only selected rows are copied" IsChecked="True" Checked="checkBoxExcelIndex_Checked" Unchecked="checkBoxExcelIndex_Unchecked"/>
         <Label Content="File Column: " HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Grid.Row="2"/>
         <ComboBox x:Name="comboBoxColumn" Grid.Column="1"  HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="2" IsEditable="True" SelectionChanged="comboBoxColumn_SelectionChanged"/>
         <Label Content="Column Name: " HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Grid.Row="3"/>
@@ -35,6 +36,6 @@
         <DataGrid x:Name="dataGridColumns" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="5" VerticalAlignment="Stretch" Width="Auto" Grid.ColumnSpan="3" CanUserAddRows="False" SelectionMode="Single" MouseDoubleClick="dataGridColumns_MouseDoubleClick" SelectionChanged="dataGridColumns_SelectionChanged" PreviewKeyDown="dataGridColumns_PreviewKeyDown" />
         <Button x:Name="buttonConfig" Content="Show Setting" Grid.Column="0" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="6"  IsEnabled="true" Click="buttonConfig_Click"/>
         <Button x:Name="buttonSave" Content="Save and Close" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="6"  IsEnabled="true" Click="buttonSave_Click"/>
-        <Label Content="Colmuns (Click grid for edit)" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Label Content="Colmuns (Click grid for edit)"  HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1"  Grid.Column="1" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
     </Grid>
 </Window>
