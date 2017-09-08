@@ -1,0 +1,23 @@
+﻿<Window x:Class="DataSetExtractor.StatusWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DataSetExtractor"
+        mc:Ignorable="d"
+        Title="StatusWindow" Height="115" Width="640" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Closed="Window_Closed" Closing="Window_Closing">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
+            <ColumnDefinition Width="200*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+        </Grid.RowDefinitions>
+        <Label x:Name="labelGenerate" Content="Status:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" />
+        <Label x:Name="labelGenerateText" Content="" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Column="1"/>
+        <ProgressBar x:Name="progressBarGeenerate" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="1" VerticalAlignment="Stretch" Width="Auto" Grid.ColumnSpan="2" IsManipulationEnabled="True"/>
+    </Grid>
+
+</Window>

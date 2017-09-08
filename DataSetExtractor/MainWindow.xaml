@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DataSetExtractor"
         mc:Ignorable="d"
-        Title="DataSet Extractor" Height="520" Width="640" WindowStartupLocation="CenterScreen">
+        Title="DataSet Extractor" Height="580" Width="640" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
@@ -16,6 +16,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="{DynamicResource GridRowStatic}"/>
             <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
             <RowDefinition Height="200*"/>
             <RowDefinition Height="{DynamicResource GridRowStatic}"/>
             <RowDefinition Height="200*"/>
@@ -23,20 +25,45 @@
             <RowDefinition Height="{DynamicResource GridRowStatic}"/>
         </Grid.RowDefinitions>
         <Label x:Name="labelDataSetFile" Content="DataSet File:" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="{DynamicResource CommonMargin}"/>
-        <ComboBox x:Name="comboBoxEntries" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Height="Auto" IsEnabled="False" Grid.ColumnSpan="2"/>
+        <DataGrid x:Name="dataGridEntries" Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.RowSpan="3"  Grid.ColumnSpan="2" VerticalAlignment="Stretch" Width="Auto" PreviewMouseDoubleClick="dataGridEntries_PreviewMouseDoubleClick" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding FileName, Mode=OneWay}" Header="File Name"/>
+                <DataGridTextColumn Binding="{Binding Source, Mode=OneWay}" Header="Path"/>
+            </DataGrid.Columns>
+        </DataGrid>
         <Button x:Name="buttonDataSetLoad" Content="Load Source File" Grid.Column="3" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonDataSetLoad_Click"/>
-        <Label x:Name="labelSecectedFiles" Grid.Row="1" Grid.ColumnSpan="3" Content="Selected files (Double Click for detail options)" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="{DynamicResource CommonMargin}"/>
-        <Button x:Name="buttonSelectFile" Content="Add File To Export" Grid.Row="1"  Grid.Column="3" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonSelectFile_Click"/>
-        <DataGrid x:Name="dataGridSelectedFiles" HorizontalAlignment="Stretch" Height="Auto" Margin="5,5,5,4.5" Grid.Row="2" VerticalAlignment="Stretch" Width="Auto" CanUserAddRows="False" MouseDoubleClick="dataGridSelectedFiles_MouseDoubleClick" Grid.ColumnSpan="4" PreviewKeyDown="dataGridSelectedFiles_PreviewKeyDown" />
-        <Label x:Name="labelKeyList" Content="Keys:" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,5.5,5,0" Grid.Row="3" Height="24"/>
-        <TextBox x:Name="textBoxKeyList" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5.5,5,5" TextWrapping="Wrap" VerticalAlignment="Stretch" Height="Auto" Grid.Row="3" Width="Auto" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Grid.RowSpan="2" Grid.ColumnSpan="3"/>
-        <CheckBox x:Name="checkBoxFullCheck" Content="Full Check" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="4" VerticalAlignment="Stretch" VerticalContentAlignment="Top" IsChecked="False" ToolTip="If Listed IČO is not in data set, it will still be added to export with &quot;No Data&quot; Value"/>
-        <CheckBox x:Name="checkBoxKeyLength" Content="Check Key Length" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="5" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
-        <TextBox x:Name="textBoxKeyLength" Grid.Column="1" Text="8" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" TextWrapping="Wrap" VerticalAlignment="Stretch" Height="Auto" Grid.Row="5" Width="Auto" AcceptsReturn="True" HorizontalContentAlignment="Right" Grid.ColumnSpan="2" />
-        <Button x:Name="buttonShowConfig" Content="Show Config" Grid.Column="3" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="5" Click="buttonShowConfig_Click"/>
-        <CheckBox x:Name="checkBoxFirstLine" Content="First line" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="6" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
-        <ProgressBar x:Name="progressBarGeenerate" Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="6" VerticalAlignment="Stretch" Width="Auto"/>
-        <CheckBox x:Name="checkBoxFile" Content="File Output" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="6" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
-        <Button x:Name="buttonGenerate" Content="Generate" Grid.Column="3" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Grid.Row="6" Click="buttonGenerate_Click"/>
+        <Label x:Name="labelSecectedFiles" Grid.Row="3" Grid.ColumnSpan="3" Content="Selected files (Double Click for detail options)" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="{DynamicResource CommonMargin}"/>
+        <Button x:Name="buttonSelectFile" Content="Add File To Export" Grid.Row="2"  Grid.Column="3" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonSelectFile_Click"/>
+        <DataGrid x:Name="dataGridSelectedFiles" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="4" VerticalAlignment="Stretch" Width="Auto" CanUserAddRows="False" MouseDoubleClick="dataGridSelectedFiles_MouseDoubleClick" Grid.ColumnSpan="4" PreviewKeyDown="dataGridSelectedFiles_PreviewKeyDown" AutoGenerateColumns="False" >
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Edit" VerticalAlignment="Stretch" Width="Auto" HorizontalAlignment="Stretch" Height="Auto" Click="Button_Click_1"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Delete" VerticalAlignment="Stretch" Width="Auto" HorizontalAlignment="Stretch" Height="Auto" Click="Button_Click"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridCheckBoxColumn Binding="{Binding FullRow, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Header="Full Row" IsThreeState="False" />
+                <DataGridTextColumn Binding="{Binding Columns, Mode=OneWay }" Header="Columns" />
+                <DataGridTextColumn Binding="{Binding FileName, Mode=OneWay}" Header="File Name"/>
+                <DataGridTextColumn Binding="{Binding Source, Mode=OneWay}" Header="Path"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Label x:Name="labelKeyList" Content="Keys:" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,6,5,0" Grid.Row="5" Height="24"/>
+        <TextBox x:Name="textBoxKeyList" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,6,5,4.5" TextWrapping="Wrap" VerticalAlignment="Stretch" Height="Auto" Grid.Row="5" Width="Auto" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Grid.RowSpan="2" Grid.ColumnSpan="3"/>
+        <CheckBox x:Name="checkBoxFullCheck" Content="Full Check" HorizontalAlignment="Stretch" Margin="5,5,5,4.5" Grid.Row="6" VerticalAlignment="Stretch" VerticalContentAlignment="Top" IsChecked="False" ToolTip="If Listed IČO is not in data set, it will still be added to export with &quot;No Data&quot; Value"/>
+        <CheckBox x:Name="checkBoxKeyLength" Content="Check Key Length" HorizontalAlignment="Stretch" Margin="5,5.5,5,4.5" Grid.Row="7" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
+        <TextBox x:Name="textBoxKeyLength" Grid.Column="1" Text="8" HorizontalAlignment="Stretch" Margin="5,5.5,5,4.5" TextWrapping="Wrap" VerticalAlignment="Stretch" Height="Auto" Grid.Row="7" Width="Auto" AcceptsReturn="True" HorizontalContentAlignment="Right" Grid.ColumnSpan="2" />
+        <Button x:Name="buttonShowConfig" Content="Show Config" Grid.Column="3" HorizontalAlignment="Stretch" Margin="5,5.5,5,4.5" VerticalAlignment="Stretch" Width="Auto" Grid.Row="7" Click="buttonShowConfig_Click"/>
+        <CheckBox x:Name="checkBoxFirstLine" Content="First line" HorizontalAlignment="Stretch" Margin="5,5.5,5,4.5" Grid.Row="8" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
+        <CheckBox x:Name="checkBoxFile" Content="File Output" Grid.Column="2" HorizontalAlignment="Stretch" Margin="5,5.5,5,4.5" Grid.Row="8" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True"/>
+        <Button x:Name="buttonGenerate" Content="Generate" Grid.Column="3" HorizontalAlignment="Stretch" Margin="5,5.5,5,4.5" VerticalAlignment="Stretch" Width="Auto" Grid.Row="8" Click="buttonGenerate_Click"/>
     </Grid>
 </Window>

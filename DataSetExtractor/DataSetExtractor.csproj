@@ -63,9 +63,13 @@
     <Compile Include="FileWindow.xaml.cs">
       <DependentUpon>FileWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\DataSet.cs" />
     <Compile Include="Model\FileSetting.cs" />
     <Compile Include="OutputWindow.xaml.cs">
       <DependentUpon>OutputWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="StatusWindow.xaml.cs">
+      <DependentUpon>StatusWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Tools\CsvParser.cs" />
     <Page Include="FileWindow.xaml">
@@ -85,6 +89,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="OutputWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="StatusWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

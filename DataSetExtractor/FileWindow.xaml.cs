@@ -86,7 +86,7 @@ namespace DataSetExtractor
                     }
                     else
                     {
-                        row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source)));
+                        row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source + "/" + FileSetting.FileName)));
                     }
                     ColumnNames.AddRange(row);
                 }

@@ -18,12 +18,15 @@ namespace DataSetExtractor
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string loadedFile = null;
         private List<FileSetting> _SelectedFiles { get; set; } = new List<FileSetting>();
+        private List<DataSet> _DataSets { get; set; } = new List<DataSet>();
         private bool? firstline;
         private bool? fullCheck = false;
         private bool? keyLengthCheck = true;
+        private bool? fileOutput = true;
         private int? keyLength = 8;
+        private StatusWindow statusWindow = null;
+        private string noDataConst = "*??##??*";
 
         public MainWindow()
         {
@@ -32,12 +35,11 @@ namespace DataSetExtractor
 
         private void buttonDataSetLoad_Click(object sender, RoutedEventArgs e)
         {
-            comboBoxEntries.SelectedIndex = -1;
-            comboBoxEntries.Items.Clear();
-            loadedFile = null;
-            comboBoxEntries.IsEnabled = false;
-            Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog();
-            dialog.Filter = "DataSet Files (*.zip; *.csv)|*.zip; *.csv|Zip files (*.zip)|*.zip|CSV files (*.csv)|*.csv";
+            Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Multiselect = true,
+                Filter = "DataSet Files (*.zip; *.csv)|*.zip; *.csv|Zip files (*.zip)|*.zip|CSV files (*.csv)|*.csv"
+            };
             var result = dialog.ShowDialog();
             if (result.HasValue && result.Value)
             {
@@ -57,35 +59,25 @@ namespace DataSetExtractor
                             var fileInfo = new FileInfo(fileNames[i]);
                             if (fileInfo.Extension.ToLower() == ".csv")
                             {
-                                loadedFile = fileNames[i];
-                                _SelectedFiles.Add(new FileSetting()
-                                {
-                                    Source = fileNames[i],
-                                    FileName = fileNames[i],
-                                    Type = FileType.Csv,
-                                });
-                                RefreshGrid();
-                                comboBoxEntries.IsEnabled = false;
+                                AddToSelectedFiles(AddDataSetToList(fileInfo.DirectoryName, fileInfo.Name), FileType.Csv);
                             }
                             else if (fileInfo.Extension.ToLower() == ".zip")
                             {
-                                loadedFile = fileNames[i];
                                 using (var zip = new ZipArchive(File.OpenRead(fileNames[i]), ZipArchiveMode.Read))
                                 {
-
-                                    foreach (var entry in zip.Entries.Where(x=>x.FullName.EndsWith(".csv")))
+                                    foreach (var entry in zip.Entries.Where(x => x.FullName.EndsWith(".csv")))
                                     {
-                                        comboBoxEntries.Items.Add(entry.FullName);
+                                        AddDataSetToList(fileNames[i], entry.FullName);
                                     }
-                                    comboBoxEntries.IsEnabled = true;
                                 }
                             }
                         }
                     }
+                    RefreshFilesGrid();
+                    RefreshGrid();
                 }
                 catch (Exception ex)
                 {
-                    comboBoxEntries.IsEnabled = false;
                     MessageBox.Show(ex.Message, "Wrong File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 }
                 finally
@@ -95,104 +87,168 @@ namespace DataSetExtractor
             }
         }
 
-        private void buttonSelectFile_Click(object sender, RoutedEventArgs e)
+        private DataSet AddDataSetToList(string path, string fileName)
         {
-            FileSetting fileSetting = AddSelectedFile();
+            if (_DataSets == null)
+            {
+                _DataSets = new List<DataSet>();
+            }
+            if (!_DataSets.Any(x => x.Source == path && x.FileName == fileName))
+            {
+                var item = new DataSet()
+                {
+                    Source = path,
+                    FileName = fileName,
+                };
+                _DataSets.Add(item);
+                return item;
+            }
+            return null;
         }
 
-        private void dataGridSelectedFiles_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private FileSetting AddToSelectedFiles(DataSet item, FileType type)
         {
-            var index = dataGridSelectedFiles.SelectedIndex;
-            if (index >= 0 && index < _SelectedFiles.Count)
+            if (item != null)
             {
-                FileSetting fileSetting = _SelectedFiles[index];
-                var cloneFileSetting = (FileSetting)fileSetting.Clone();
-                if (fileSetting != null)
+                if (_SelectedFiles == null)
                 {
-                    FileWindow window = new FileWindow(fileSetting)
+                    _SelectedFiles = new List<FileSetting>();
+                }
+                if (!_SelectedFiles.Any(x => x.Source == item.Source && x.FileName == item.FileName))
+                {
+                    var fileitem = new FileSetting()
                     {
-                        Owner = this
+                        Source = item.Source,
+                        FileName = item.FileName,
+                        Type = type,
                     };
-                    var result = window.ShowDialog();
-                    if (result == true)
-                    {
-                        RefreshGrid();
-                    }
-                    else
-                    {
-                        _SelectedFiles[index] = cloneFileSetting;
-                    }
+                    _SelectedFiles.Add(fileitem);
+                    return fileitem;
                 }
             }
+            return null;
         }
 
-        private FileSetting AddSelectedFile()
+
+        private void buttonSelectFile_Click(object sender, RoutedEventArgs e)
         {
-            FileSetting result = null;
-            if (_SelectedFiles == null)
+            AddSelectedFiles();
+        }
+
+        private IEnumerable<FileSetting> AddSelectedFiles()
+        {
+            var result = new List<FileSetting>();
+            if (dataGridEntries.SelectedItems != null && dataGridEntries.SelectedItems.Count > 0)
             {
-                _SelectedFiles = new List<FileSetting>();
-            }
-            string entryName = (string)comboBoxEntries.SelectedValue;
-            var filename = (!string.IsNullOrEmpty(entryName)) ? entryName : loadedFile;
-            if (!_SelectedFiles.Any(x => x.Source == loadedFile && x.FileName == filename))
-            {
-                _SelectedFiles.Add(new FileSetting()
+                foreach (DataSet item in dataGridEntries.SelectedItems)
                 {
-                    Source = loadedFile,
-                    FileName = filename,
-                    Type = FileType.Zip,
-                });
+                    var fileitem = AddToSelectedFiles(item, FileType.Zip);
+                    if (fileitem != null)
+                    {
+                        result.Add(fileitem);
+                    }
+                }
             }
             RefreshGrid();
             return result;
         }
 
+        private void RefreshFilesGrid()
+        {
+            dataGridEntries.IsEnabled = false;
+            dataGridEntries.ItemsSource = null;
+            if (_DataSets != null && _DataSets.Any())
+            {
+                dataGridEntries.ItemsSource = _DataSets.Where(x => x != null);
+                dataGridEntries.IsEnabled = true;
+            }
+        }
+
         private void RefreshGrid()
         {
             dataGridSelectedFiles.IsEnabled = false;
+            dataGridSelectedFiles.ItemsSource = null;
             if (_SelectedFiles != null && _SelectedFiles.Any())
             {
                 dataGridSelectedFiles.ItemsSource = _SelectedFiles.Where(x => x != null).Select(x =>
                 {
-                    var fileInfo = new FileInfo(x.Source);
-                    return new {
-                        x.FullRow,
+                    return new DataSetItem {
+                        FullRow = x.FullRow,
                         Columns = (!x.FullRow) ? x.Output.Count : (int?)null,
-                        Set = x.FileName,
-                        Source = fileInfo.Name,
+                        FileName = x.FileName,
+                        Source = x.Source,
                     };
                 });
                 dataGridSelectedFiles.IsEnabled = true;
             }
         }
 
-        private void buttonGenerate_Click(object sender, RoutedEventArgs e)
+        private static Microsoft.Win32.SaveFileDialog CreateDialog()
         {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog()
+            return new Microsoft.Win32.SaveFileDialog()
             {
                 FileName = "DataSet-" + DateTime.Now.ToString("yyyy-MM-dd"),
                 DefaultExt = ".csv",
                 Filter = "CSV files (.csv)|*.csv|Text documents (.txt)|*.txt"
             };
-            if (checkBoxFile.IsChecked != true || (checkBoxFile.IsChecked == true && dlg.ShowDialog() == true))
-            {
-                buttonGenerate.IsEnabled = false;
-                fullCheck = checkBoxFullCheck.IsChecked;
-                firstline = checkBoxFirstLine.IsChecked;
-                keyLengthCheck = checkBoxKeyLength.IsChecked;
+        }
 
-                if (keyLengthCheck != true)
-                {
-                    keyLength = null;
-                }
-                else if (int.TryParse(textBoxKeyLength.Text?.Trim(), out int result))
-                {
-                    keyLength = result;
-                }
-                string keysText = textBoxKeyList.Text.Trim();
-                var keyList = keysText.Split(new[] { ",", "\n", ";" }, StringSplitOptions.RemoveEmptyEntries)
-                       .Select(x => {
+        private void BeforeGenerate()
+        {
+            buttonGenerate.IsEnabled = false;
+            fullCheck = checkBoxFullCheck.IsChecked;
+            firstline = checkBoxFirstLine.IsChecked;
+            keyLengthCheck = checkBoxKeyLength.IsChecked;
+            fileOutput = checkBoxFile.IsChecked == true;
+            if (keyLengthCheck != true)
+            {
+                keyLength = null;
+            }
+            else if (int.TryParse(textBoxKeyLength.Text?.Trim(), out int result))
+            {
+                keyLength = result;
+            }
+        }
+
+        private void AfterGenerate(IDictionary<string, IEnumerable<IEnumerable<string>>> resultData = null, string fileName = null)
+        {
+            DisplayResult(resultData, fileName);
+        }
+
+        private void buttonGenerate_Click(object sender, RoutedEventArgs e)
+        {
+            bool dialogResult = false;
+            Microsoft.Win32.SaveFileDialog dlg = CreateDialog();
+            dialogResult = (checkBoxFile.IsChecked != true || (checkBoxFile.IsChecked == true && dlg.ShowDialog() == true));
+            string fileName = null;
+            if (dialogResult == true)
+            {
+                fileName = dlg.FileName;
+            }
+            BeforeGenerate();
+            string keysText = textBoxKeyList.Text.Trim();
+            IDictionary<string, IEnumerable<IEnumerable<string>>> resultData = null;
+            statusWindow = new StatusWindow((_SelectedFiles != null) ? _SelectedFiles.Count : 0)
+            {
+                Owner = this,
+            };
+            statusWindow.Start(() =>
+            {
+                resultData = Generate(dialogResult, keysText);
+            },
+            () =>
+            {
+                AfterGenerate(resultData, fileName);
+            });
+        }
+
+        private IDictionary<string, IEnumerable<IEnumerable<string>>> Generate(bool generate, string keysText = null)
+        {
+            if (generate)
+            {
+                var keyList = (keysText != null) ? keysText.Split(new[] { ",", "\n", ";" }, StringSplitOptions.RemoveEmptyEntries)
+                       .Select(x =>
+                       {
                            var result = x?.Trim().Replace(" ", string.Empty);
                            if (keyLength != null)
                            {
@@ -200,18 +256,17 @@ namespace DataSetExtractor
                            }
                            return result;
                        })
-                       .Where(x => !string.IsNullOrEmpty(x)).Distinct().ToArray();
+                       .Where(x => !string.IsNullOrEmpty(x)).Distinct().ToArray() : new string[0];
                 if (keyLengthCheck != true && keyLength != null)
                 {
                     keyList = keyList.Where(x => x.Length == keyLength).ToArray();
                 }
-                Dictionary<string, List<string[]>> data = new Dictionary<string, List<string[]>>();
-                buttonGenerate.Content = "Loading Data ...";
+                IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data = new Dictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>>();
                 var count = _SelectedFiles.Count;
                 for (int i = 0; i < count; i++)
                 {
                     var item = _SelectedFiles[i];
-                    buttonGenerate.Content = "Loading Data (" + i + "/" + count + ") ...";
+                    UpdateStatusWindow(i, string.Format("Started Processing File: {0}", i + 1));
                     if (item.Type == FileType.Zip)
                     {
                         using (var zip = new ZipArchive(File.OpenRead(item.Source), ZipArchiveMode.Read))
@@ -223,127 +278,105 @@ namespace DataSetExtractor
                             }
                         }
                     }
-                    else
+                    else if (item.Type == FileType.Csv)
                     {
-                        data = LoadData(keyList, item, File.OpenRead(item.Source), data, i);
+                        data = LoadData(keyList, item, File.OpenRead(item.Source + "/" + item.FileName), data, i + 1);
                     }
+                    UpdateStatusWindow(i + 1, string.Format("Done Processing File: {0}", i + 1));
                 }
-                buttonGenerate.Content = "Writing file ...";
-
-                var outputdata = data.Where(x => x.Value.Any(y => y != null && y.Length > 0 && y.Any(z => !string.IsNullOrEmpty(z)))).ToDictionary(x => x.Key, x => x.Value);
+                var outputdata = data.Where(ico => ico.Value.Any(section => section != null && section.Any(row => row != null && row.Any(value => !string.IsNullOrEmpty(value)))));
                 if (outputdata.Any())
                 {
+                    MaxStatusWindow(outputdata.Count());
                     var rowItem = outputdata.First();
-                    var sectionsCount = rowItem.Value.Count;
+                    var sectionsCount = rowItem.Value.Count();
                     int[] maxColumns = new int[sectionsCount];
-                    for (int i = 0; i < sectionsCount; i++)
+                    for (int sectionIndex = 0; sectionIndex < sectionsCount; sectionIndex++)
                     {
-                        maxColumns[i] = outputdata.Max(x => x.Value[i].Length);
+                        maxColumns[sectionIndex] = outputdata.Max(x => (x.Value.Count() > sectionIndex) ? (x.Value.ElementAt(sectionIndex).Count() > 0) ? x.Value.ElementAt(sectionIndex).Max(rows => (rows != null) ? rows.Count() : 0) : 0 : 0);
                     }
-                    Dictionary<string, string[]> finalData = new Dictionary<string, string[]>();
+                    IDictionary<string, IEnumerable<IEnumerable<string>>> finalData = new Dictionary<string, IEnumerable<IEnumerable<string>>>();
+                    int lineIndex = 0;
+                    UpdateStatusWindow(lineIndex, string.Format("Start Processing items. Done: {0}", lineIndex));
                     foreach (var kvp in outputdata.OrderBy(x => x.Key))
                     {
-                        string[] row = new string[0];
-                        for (int i = 0; i < sectionsCount; i++)
+                        List<string[]> rows = new List<string[]>();
+                        int maxRows = kvp.Value.Max(x => x.Count());
+                        for (int rowIndex = 0; rowIndex < maxRows; rowIndex++)
                         {
-                            string[] subrow = new string[maxColumns[i]];
-                            for (int j = 0; j < kvp.Value[i].Length; j ++)
-                            {
-                                subrow[j] = kvp.Value[i][j];
-                            }
-                            row = row.Concat(subrow).ToArray();
+                            rows.Add(new string[0]);
                         }
-                        finalData.Add(kvp.Key, row);
-                    }
-                    if (checkBoxFile.IsChecked == true)
-                    {
-                        try
+                        for (int sectionIndex = 0; sectionIndex < sectionsCount; sectionIndex++)
                         {
-                            using (var writer = new StreamWriter(dlg.FileName, false, Encoding.UTF8))
+                            var keyIndex = (_SelectedFiles[sectionIndex].FullRow) ? _SelectedFiles[sectionIndex].KeyColumn.SourceNumber : _SelectedFiles[sectionIndex].Output.FirstOrDefault(x => x.SourceNumber == _SelectedFiles[sectionIndex].KeyColumn.SourceNumber)?.Number ?? 0;
+                            var keyValue = (kvp.Value.ElementAt(sectionIndex).Count() > 0 && kvp.Value.ElementAt(sectionIndex).First().Count() > keyIndex) ? kvp.Value.ElementAt(sectionIndex).First().ElementAt(keyIndex) : kvp.Key;
+                            for (int rowIndex = 0; rowIndex < maxRows; rowIndex++)
                             {
-                                int line = 0;
-                                foreach (var kvp in finalData.OrderBy(x => x.Key))
+                                string[] subrow = new string[maxColumns[sectionIndex]];
+                                if (kvp.Value.ElementAt(sectionIndex).Count() > rowIndex)
                                 {
-                                    writer.WriteLine(string.Join(";", kvp.Value.Select(x => "\"" + x + "\"")));
-                                    line++;
-                                    if (line % 5000 == 0)
+                                    if (kvp.Value.ElementAt(sectionIndex).ElementAt(rowIndex).Count() > 0)
                                     {
-                                        writer.Flush();
-                                        buttonGenerate.Content = "Writing file .";
+                                        for (int valueIndex = 0; valueIndex < kvp.Value.ElementAt(sectionIndex).ElementAt(rowIndex).Count(); valueIndex++)
+                                        {
+                                            subrow[valueIndex] = kvp.Value.ElementAt(sectionIndex).ElementAt(rowIndex).ElementAt(valueIndex).Replace(noDataConst, keyValue);
+                                        }
                                     }
-                                    if (line % 3 == 1)
+                                    else
                                     {
-                                    }
-                                    else if (line % 3 == 2)
-                                    {
-                                        buttonGenerate.Content = "Writing file ..";
-                                    }
-                                    if (line % 3 == 0)
-                                    {
-                                        buttonGenerate.Content = "Writing file ...";
+                                        subrow[keyIndex] = keyValue;
                                     }
                                 }
-                                writer.Flush();
+                                else if (_SelectedFiles[sectionIndex].FullRow || _SelectedFiles[sectionIndex].Output.Any(x => x.SourceNumber == _SelectedFiles[sectionIndex].KeyColumn.SourceNumber))
+                                {
+                                    subrow[keyIndex] = keyValue;
+                                    if (fullCheck.HasValue && fullCheck.Value)
+                                    {
+                                        subrow[(keyIndex == 0 && subrow.Length > 0) ? keyIndex + 1 : 0] = "Bez dát";
+                                    }
+                                }
+                                rows[rowIndex] = rows[rowIndex].Concat(subrow).ToArray();
                             }
                         }
-                        catch (Exception ex)
+                        finalData.Add(kvp.Key, rows.ToArray());
+                        if ((lineIndex + 1) % 1000 == 0)
                         {
-                            MessageBox.Show(ex.Message, "File Write Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.None);
-                            ShowOutputWindow(finalData);
+                            UpdateStatusWindow(lineIndex + 1, string.Format("Processing items. Done: {0}", lineIndex + 1));
                         }
+                        lineIndex++;
                     }
-                    else
-                    {
-                        ShowOutputWindow(finalData);
-                    }
+                    UpdateStatusWindow(lineIndex, string.Format("Done Processing items: {0}", lineIndex));
+                    return finalData;
                 }
-                buttonGenerate.Content = "Generate";
-                buttonGenerate.IsEnabled = true;
+                else
+                {
+                    MessageBox.Show("Given result is empty", "No Data", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, MessageBoxOptions.None);
+                }
             }
+            return null;
         }
 
-        private void ShowOutputWindow(IEnumerable<KeyValuePair<string, string[]>> outputdata)
-        {
-            StringBuilder text = new StringBuilder();
-            foreach (var kvp in outputdata.OrderBy(x => x.Key))
-            {
-                text.AppendLine(string.Join(";", kvp.Value.Select(x => "\"" + x + "\"")));
-            }
-            OutputWindow window = new OutputWindow(text.ToString())
-            {
-                Owner = this
-            };
-
-            var result = window.ShowDialog();
-        }
-
-        private Dictionary<string, List<string[]>> LoadData(string[] keyList, FileSetting item, Stream stream, Dictionary<string, List<string[]>> data, int filePosition)
+        private IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> LoadData(string[] keyList, FileSetting item, Stream stream, IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data, int filePosition)
         {
             if (data == null)
             {
-                data = new Dictionary<string, List<string[]>>();
+                data = new Dictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>>();
             }
-
-            var buttonText = buttonGenerate.Content;
-            buttonGenerate.Content = "Generating ...";
-            Task.Factory.StartNew(() => { return ProcessStream(item, keyList, stream, data, filePosition); }).ContinueWith((task) =>{}).Wait();
-            buttonGenerate.Content = buttonText;
-            progressBarGeenerate.Value = progressBarGeenerate.Maximum;
-
+            ProcessStream(item, keyList, stream, data, filePosition);
             return data;
         }
 
-        private int ProcessStream(FileSetting item, string[] keyList, Stream entry, Dictionary<string, List<string[]>> data, int filePosition)
+        private void ProcessStream(FileSetting item, string[] keyList, Stream entry, IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data, int filePosition)
         {
-            return ProcessStream(item, keyList, new Tools.CsvParser(new StreamReader(entry), ';'), data, filePosition);
+            ProcessStream(item, keyList, new Tools.CsvParser(new StreamReader(entry), ';'), data, filePosition);
         }
 
-        private int ProcessStream(FileSetting item, string[] keyList, Tools.CsvParser reader, Dictionary<string, List<string[]>> data, int filePosition)
+        private void ProcessStream(FileSetting item, string[] keyList, Tools.CsvParser reader, IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data, int sectionIndex)
         {
-            int processed = 0;
             long lineIndex = 0;
             Dictionary<string, string> found = new Dictionary<string, string>();
             int lastlength = 0;
+            UpdateStatusWindow(sectionIndex, string.Format("Start Reading Dataset {0} items. Done: {1}", sectionIndex + 1, lineIndex));
             foreach (var splitLine in reader.Parse())
             {
                 var isFisrtLine = (lineIndex == 0 && firstline.Value == true);
@@ -385,17 +418,12 @@ namespace DataSetExtractor
                             }
                         }
                         lastlength = datarow.Length;
-                        if (!data.ContainsKey(key))
-                        {
-                            var list = new List<string[]>();
-                            for (int i = 0; i < _SelectedFiles.Count; i++)
-                            {
-                                list.Add(new string[0]);
-                            }
-                            data.Add(key, list);
-                        }
-                        data[key][filePosition] = datarow;
+                        data = InitDataItem(data, sectionIndex, key, datarow);
                     }
+                }
+                if ((lineIndex + 1) % 1000 == 0)
+                {
+                    UpdateStatusWindow(sectionIndex, string.Format("Reading Dataset {0} items. Done: {1}", sectionIndex + 1, lineIndex + 1));
                 }
                 lineIndex++;
             }
@@ -406,22 +434,201 @@ namespace DataSetExtractor
                 if (fullCheck.HasValue && fullCheck.Value)
                 {
                     datarow = new string[1];
-                    datarow[0] = "Bez dát";
+                    datarow[0] = noDataConst;
                 }
-                if (!data.ContainsKey(notfounditem))
+                data = InitDataItem(data, sectionIndex, notfounditem, datarow);
+                if ((lineIndex + 1) % 1000 == 0)
                 {
-                    var list = new List<string[]>();
-                    for (int i = 0; i < _SelectedFiles.Count; i++)
-                    {
-                        list.Add(new string[0]);
-                    }
-                    data.Add(notfounditem, list);
+                    UpdateStatusWindow(sectionIndex, string.Format("Reading Dataset {0} items. Done: {1}", sectionIndex + 1, lineIndex + 1));
                 }
-                data[notfounditem][filePosition] = datarow;
                 lineIndex++;
-                processed++;
             }
-            return processed;
+            UpdateStatusWindow(sectionIndex + 1, string.Format("Done Reading Dataset {0} items. Done: {1}", sectionIndex + 1, lineIndex));
+        }
+
+        private IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> InitDataItem(IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data, int sectionIndex, string key, IEnumerable<string> datarow)
+        {
+            if (!data.ContainsKey(key))
+            {
+                var list = new List<IEnumerable<IEnumerable<string>>>();
+                for (int i = 0; i < _SelectedFiles.Count; i++)
+                {
+                    var first = new List<IEnumerable<string>>();
+                    list.Add(first.ToArray());
+                }
+                data.Add(key, list.ToArray());
+            }
+            if (data.TryGetValue(key, value: out IEnumerable<IEnumerable<IEnumerable<string>>> val))
+            {
+                var row = val.ToArray();
+                row[sectionIndex] = row[sectionIndex].Concat(new[] { datarow });
+                data.Remove(key);
+                data.Add(key, row);
+            }
+            return data;
+        }
+
+        private void DisplayResult(IDictionary<string, IEnumerable<IEnumerable<string>>> finalData = null, string fileName = null)
+        {
+            statusWindow = new StatusWindow((_SelectedFiles != null) ? _SelectedFiles.Count : 0)
+            {
+                Owner = this,
+            };
+            statusWindow.Start(() =>
+            {
+                if (fileOutput == true && finalData != null)
+                {
+                    try
+                    {
+                        using (var writer = new StreamWriter(fileName, false, Encoding.UTF8))
+                        {
+                            int line = 0;
+                            UpdateStatusWindow(line, string.Format("Start Writing File"));
+                            foreach (var kvp in finalData.OrderBy(x => x.Key))
+                            {
+                                foreach (var row in kvp.Value)
+                                {
+                                    var o = string.Join(";", row.Select(x => "\"" + x + "\""));
+                                    writer.WriteLine(o);
+                                    if ((line + 1) % 1000 == 0)
+                                    {
+                                        UpdateStatusWindow(line + 1, string.Format("Writing File"));
+                                        writer.Flush();
+                                    }
+                                    line++;
+                                }
+                            }
+                            UpdateStatusWindow(line, string.Format("Closing File"));
+                            writer.Flush();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowOutputWindow(finalData);
+                        throw ex;
+                    }
+                }
+            },
+            () =>
+            {
+                if (fileOutput != true && finalData != null)
+                {
+                    ShowOutputWindow(finalData);
+                }
+                else
+                {
+                    if (Dispatcher.CheckAccess())
+                    {
+                        buttonGenerate.IsEnabled = true;
+                    }
+                    else
+                    {
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            buttonGenerate.IsEnabled = true;
+                        }));
+                    }
+                }
+            });
+        }
+
+        private void ShowOutputWindow(IDictionary<string, IEnumerable<IEnumerable<string>>> outputdata)
+        {
+            StringBuilder text = new StringBuilder();
+            statusWindow = new StatusWindow((_SelectedFiles != null) ? _SelectedFiles.Count : 0)
+            {
+                Owner = this,
+            };
+            statusWindow.Start(() => {
+                int line = 0;
+                MaxStatusWindow(outputdata.Sum(x => x.Value.Count()));
+                UpdateStatusWindow(line, string.Format("Start Generating Output"));
+                foreach (var kvp in outputdata.OrderBy(x => x.Key))
+                {
+                    foreach (var row in kvp.Value)
+                    {
+                        text.AppendLine(string.Join(";", row.Select(x => "\"" + x + "\"")));
+                        if ((line + 1) % 1000 == 0)
+                        {
+                            UpdateStatusWindow(line + 1, string.Format("Generating Output"));
+                        }
+                        line++;
+                    }
+                }
+                UpdateStatusWindow(line, string.Format("Loading Output"));
+            },
+            () => {
+                if (Dispatcher.CheckAccess())
+                {
+                    buttonGenerate.IsEnabled = true;
+                    InitOutputWindow(text.ToString());
+                }
+                else
+                {
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        buttonGenerate.IsEnabled = true;
+                        InitOutputWindow(text.ToString());
+                    }));
+                }
+            });
+        }
+
+        private void InitOutputWindow(string text)
+        {
+            OutputWindow window = new OutputWindow(text)
+            {
+                Owner = this
+            };
+            var result = window.ShowDialog();
+        }
+
+        private void MaxStatusWindow(int max)
+        {
+            if (statusWindow != null)
+            {
+                statusWindow.SetMaxStatus(max);
+            }
+        }
+
+        private void UpdateStatusWindow(int i, string text)
+        {
+            if (statusWindow != null && statusWindow.Worker != null)
+            {
+                statusWindow.Worker.ReportProgress(i, text);
+            }
+        }
+
+        private void dataGridSelectedFiles_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var grid = (DataGrid)sender;
+            EditSelectedFiles(grid);
+        }
+
+        private void EditSelectedFiles(DataGrid grid)
+        {
+            var index = grid.SelectedIndex;
+            if (index >= 0 && index < _SelectedFiles.Count)
+            {
+                FileSetting fileSetting = _SelectedFiles[index];
+                var cloneFileSetting = (FileSetting)fileSetting.Clone();
+                if (fileSetting != null)
+                {
+                    FileWindow window = new FileWindow(fileSetting)
+                    {
+                        Owner = this
+                    };
+                    var result = window.ShowDialog();
+                    if (result == true)
+                    {
+                        RefreshGrid();
+                    }
+                    else
+                    {
+                        _SelectedFiles[index] = cloneFileSetting;
+                    }
+                }
+            }
         }
 
         private void dataGridSelectedFiles_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
@@ -429,13 +636,33 @@ namespace DataSetExtractor
             var grid = (DataGrid)sender;
             if (Key.Delete == e.Key)
             {
-                var index = grid.SelectedIndex;
-                if (index >= 0 && index < _SelectedFiles.Count)
-                {
-                    _SelectedFiles.RemoveAt(index);
-                }
-                RefreshGrid();
+                DeleteSelectedFromGrid(grid);
             }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            DeleteSelectedFromGrid(dataGridSelectedFiles);
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            EditSelectedFiles(dataGridSelectedFiles);
+        }
+
+        private void dataGridEntries_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            AddSelectedFiles();
+        }
+
+        private void DeleteSelectedFromGrid(DataGrid grid)
+        {
+            var index = grid.SelectedIndex;
+            if (index >= 0 && index < _SelectedFiles.Count)
+            {
+                _SelectedFiles.RemoveAt(index);
+            }
+            RefreshGrid();
         }
 
         private void buttonShowConfig_Click(object sender, RoutedEventArgs e)
