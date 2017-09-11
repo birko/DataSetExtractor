@@ -40,7 +40,7 @@ namespace DataSetExtractor
         private void InitUI()
         {
             checkBoxFullRow.IsChecked = FileSetting.FullRow;
-            textBoxColumnNumber.Text = FileSetting.Output.Count.ToString();
+            textBoxColumnNumber.Text = (FileSetting.Output.Count + 1).ToString();
             RefreshGrid();
             ReadFirstRow();
         }
@@ -80,13 +80,13 @@ namespace DataSetExtractor
                             var entry = zip.GetEntry(FileSetting.FileName);
                             if (entry != null)
                             {
-                                row = GetRow(new StreamReader(entry.Open()));
+                                row = GetRow(new StreamReader(entry.Open(), true));
                             }
                         }
                     }
                     else
                     {
-                        row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source + "/" + FileSetting.FileName)));
+                        row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source + "/" + FileSetting.FileName), true));
                     }
                     ColumnNames.AddRange(row);
                 }
@@ -234,7 +234,12 @@ namespace DataSetExtractor
                 if (index >= 0 && index < FileSetting.Output.Count)
                 {
                     FileSetting.Output.RemoveAt(index);
+                    for (int i = index; i < FileSetting.Output.Count; i++)
+                    {
+                        FileSetting.Output[i].Number--;
+                    }
                 }
+                textBoxColumnNumber.Text = (FileSetting.Output.Count + 1).ToString();
                 checkBoxFullRow.IsChecked = (FileSetting.Output.Count == 0);
                 RefreshGrid();
             }

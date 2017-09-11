@@ -280,7 +280,7 @@ namespace DataSetExtractor
                     }
                     else if (item.Type == FileType.Csv)
                     {
-                        data = LoadData(keyList, item, File.OpenRead(item.Source + "/" + item.FileName), data, i + 1);
+                        data = LoadData(keyList, item, File.OpenRead(item.Source + "/" + item.FileName), data, i);
                     }
                     UpdateStatusWindow(i + 1, string.Format("Done Processing File: {0}", i + 1));
                 }
