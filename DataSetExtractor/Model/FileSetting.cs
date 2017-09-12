@@ -82,9 +82,13 @@ namespace DataSetExtractor.Model
         /// </summary>
         public Column KeyColumn { get; set; } = new Column() { SourceNumber = 0 };
         /// <summary>
-        /// Outoput column settings if not full row
+        /// Output column settings if not full row
         /// </summary>
         public List<OutputColumn> Output { get; set; }
+        /// <summary>
+        /// Encoding of the file defaukt UTF-8
+        /// </summary>
+        public int FileEncoding { get; set; } = Encoding.UTF8.CodePage;
 
         public object Clone()
         {
@@ -96,6 +100,7 @@ namespace DataSetExtractor.Model
                 FullRow = FullRow,
                 KeyColumn = (Column)KeyColumn.Clone(),
                 Output = Output?.Select(x => (OutputColumn)x.Clone()).ToList(),
+                FileEncoding = FileEncoding
             };
         }
 
@@ -109,6 +114,7 @@ namespace DataSetExtractor.Model
                 FullRow = fileSetting.FullRow;
                 KeyColumn = fileSetting.KeyColumn;
                 Output = fileSetting.Output;
+                FileEncoding = fileSetting.FileEncoding;
             }
         }
     }

@@ -368,7 +368,7 @@ namespace DataSetExtractor
 
         private void ProcessStream(FileSetting item, string[] keyList, Stream entry, IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data, int filePosition)
         {
-            ProcessStream(item, keyList, new Tools.CsvParser(new StreamReader(entry), ';'), data, filePosition);
+            ProcessStream(item, keyList, new Tools.CsvParser(new StreamReader(entry, Encoding.GetEncoding(item.FileEncoding)), ';'), data, filePosition);
         }
 
         private void ProcessStream(FileSetting item, string[] keyList, Tools.CsvParser reader, IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data, int sectionIndex)

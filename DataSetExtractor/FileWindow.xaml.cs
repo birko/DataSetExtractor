@@ -19,6 +19,16 @@ using System.Windows.Shapes;
 
 namespace DataSetExtractor
 {
+    class EncodingItem
+    {
+        public int ID { get; set; }
+        public string Name { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format("{0} - {1}", ID.ToString().PadRight(5,' '), Name);
+        }
+    }
     /// <summary>
     /// Interaction logic for FileWindow.xaml
     /// </summary>
@@ -43,6 +53,9 @@ namespace DataSetExtractor
             textBoxColumnNumber.Text = (FileSetting.Output.Count + 1).ToString();
             RefreshGrid();
             ReadFirstRow();
+            var items = Encoding.GetEncodings().Select(x => new EncodingItem { ID = x.CodePage, Name = x.DisplayName });
+            comboBoxEncoding.ItemsSource = items;
+            comboBoxEncoding.SelectedValue = items.FirstOrDefault(x => x.ID == FileSetting.FileEncoding).ID;
         }
 
         private string GetExcelColumnName(int columnNumber)
@@ -80,13 +93,13 @@ namespace DataSetExtractor
                             var entry = zip.GetEntry(FileSetting.FileName);
                             if (entry != null)
                             {
-                                row = GetRow(new StreamReader(entry.Open(), true));
+                                row = GetRow(new StreamReader(entry.Open(), Encoding.GetEncoding(FileSetting.FileEncoding)));
                             }
                         }
                     }
                     else
                     {
-                        row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source + "/" + FileSetting.FileName), true));
+                        row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source + "/" + FileSetting.FileName), Encoding.GetEncoding(FileSetting.FileEncoding)));
                     }
                     ColumnNames.AddRange(row);
                 }
@@ -285,6 +298,19 @@ namespace DataSetExtractor
         private void checkBoxExcelIndex_Unchecked(object sender, RoutedEventArgs e)
         {
             ReadFirstRow();
+        }
+
+        private void comboBoxEncoding_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (FileSetting != null && comboBoxEncoding.SelectedIndex >= 0 && comboBoxEncoding.SelectedItem != null)
+            {
+                var item = (EncodingItem)comboBoxEncoding.SelectedItem;
+                if (FileSetting.FileEncoding != item.ID)
+                {
+                    FileSetting.FileEncoding = item.ID;
+                    ReadFirstRow(true);
+                }
+            }
         }
     }
 }
