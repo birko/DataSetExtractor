@@ -112,9 +112,12 @@ namespace DataSetExtractor
                     SafeClose();
                     if (e.Error != null)
                     {
-                        MessageBox.Show(e.Error.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MessageBoxOptions.None);
+                        throw e.Error;
                     }
-                    closeFunction?.Invoke();
+                    else
+                    {
+                        closeFunction?.Invoke();
+                    }
                 };
                 Worker.ProgressChanged += (sender, e) => {
                     Update(e.ProgressPercentage, (string)e.UserState);

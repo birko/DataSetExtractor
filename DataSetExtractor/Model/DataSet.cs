@@ -16,6 +16,10 @@ namespace DataSetExtractor.Model
         /// File Source physical path to zip or directory
         /// </summary>
         public string Source { get; set; }
+        /// <summary>
+        /// File Type
+        /// </summary>
+        public FileType Type { get; set; }
     }
 
     class DataSetItem : DataSet

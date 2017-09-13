@@ -31,6 +31,20 @@ namespace DataSetExtractor
         public MainWindow()
         {
             InitializeComponent();
+            Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
+        }
+
+        private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            if (MessageBox.Show("An error occured. Wanna see more detail?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No) == MessageBoxResult.Yes)
+            {
+                var text = e.Exception.Message + "\n-------------\n" + e.Exception.StackTrace;
+                OutputWindow window = new OutputWindow(text)
+                {
+                    Owner = this
+                };
+                var result = window.ShowDialog();
+            }
         }
 
         private void buttonDataSetLoad_Click(object sender, RoutedEventArgs e)
@@ -59,7 +73,7 @@ namespace DataSetExtractor
                             var fileInfo = new FileInfo(fileNames[i]);
                             if (fileInfo.Extension.ToLower() == ".csv")
                             {
-                                AddToSelectedFiles(AddDataSetToList(fileInfo.DirectoryName, fileInfo.Name), FileType.Csv);
+                                AddToSelectedFiles(AddDataSetToList(fileInfo.DirectoryName, fileInfo.Name, FileType.Csv), FileType.Csv);
                             }
                             else if (fileInfo.Extension.ToLower() == ".zip")
                             {
@@ -67,7 +81,7 @@ namespace DataSetExtractor
                                 {
                                     foreach (var entry in zip.Entries.Where(x => x.FullName.EndsWith(".csv")))
                                     {
-                                        AddDataSetToList(fileNames[i], entry.FullName);
+                                        AddDataSetToList(fileNames[i], entry.FullName, FileType.Zip);
                                     }
                                 }
                             }
@@ -87,18 +101,19 @@ namespace DataSetExtractor
             }
         }
 
-        private DataSet AddDataSetToList(string path, string fileName)
+        private DataSet AddDataSetToList(string path, string fileName, FileType type)
         {
             if (_DataSets == null)
             {
                 _DataSets = new List<DataSet>();
             }
-            if (!_DataSets.Any(x => x.Source == path && x.FileName == fileName))
+            if (!_DataSets.Any(x => x.Source == path && x.FileName == fileName && x.Type == type))
             {
                 var item = new DataSet()
                 {
                     Source = path,
                     FileName = fileName,
+                    Type = type,
                 };
                 _DataSets.Add(item);
                 return item;
@@ -142,7 +157,7 @@ namespace DataSetExtractor
             {
                 foreach (DataSet item in dataGridEntries.SelectedItems)
                 {
-                    var fileitem = AddToSelectedFiles(item, FileType.Zip);
+                    var fileitem = AddToSelectedFiles(item, item.Type);
                     if (fileitem != null)
                     {
                         result.Add(fileitem);
@@ -266,23 +281,31 @@ namespace DataSetExtractor
                 for (int i = 0; i < count; i++)
                 {
                     var item = _SelectedFiles[i];
-                    UpdateStatusWindow(i, string.Format("Started Processing File: {0}", i + 1));
-                    if (item.Type == FileType.Zip)
+                    try
                     {
-                        using (var zip = new ZipArchive(File.OpenRead(item.Source), ZipArchiveMode.Read))
+
+                        UpdateStatusWindow(i, string.Format("Started Processing File: {0}", i + 1));
+                        if (item.Type == FileType.Zip)
                         {
-                            var entry = zip.GetEntry(item.FileName);
-                            if (entry != null)
+                            using (var zip = new ZipArchive(File.OpenRead(item.Source), ZipArchiveMode.Read))
                             {
-                                data = LoadData(keyList, item, entry.Open(), data, i);
+                                var entry = zip.GetEntry(item.FileName);
+                                if (entry != null)
+                                {
+                                    data = LoadData(keyList, item, entry.Open(), data, i);
+                                }
                             }
                         }
+                        else if (item.Type == FileType.Csv)
+                        {
+                            data = LoadData(keyList, item, File.OpenRead(item.Source + "/" + item.FileName), data, i);
+                        }
+                        UpdateStatusWindow(i + 1, string.Format("Done Processing File: {0}", i + 1));
                     }
-                    else if (item.Type == FileType.Csv)
+                    catch (System.IO.IOException ex)
                     {
-                        data = LoadData(keyList, item, File.OpenRead(item.Source + "/" + item.FileName), data, i);
+                        MessageBox.Show(String.Format("Could not read file: {0}. Check if is is not open by another program or deleted.", item.Source + "/" + item.FileName), "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
                     }
-                    UpdateStatusWindow(i + 1, string.Format("Done Processing File: {0}", i + 1));
                 }
                 var outputdata = data.Where(ico => ico.Value.Any(section => section != null && section.Any(row => row != null && row.Any(value => !string.IsNullOrEmpty(value)))));
                 if (outputdata.Any())
@@ -488,7 +511,7 @@ namespace DataSetExtractor
                             {
                                 foreach (var row in kvp.Value)
                                 {
-                                    var o = string.Join(";", row.Select(x => "\"" + x + "\""));
+                                    var o = "\"" + kvp.Key + "\";" + string.Join(";", row.Select(x => "\"" + x + "\""));
                                     writer.WriteLine(o);
                                     if ((line + 1) % 1000 == 0)
                                     {
@@ -547,7 +570,7 @@ namespace DataSetExtractor
                 {
                     foreach (var row in kvp.Value)
                     {
-                        text.AppendLine(string.Join(";", row.Select(x => "\"" + x + "\"")));
+                        text.AppendLine("\"" + kvp.Key + "\";" + string.Join(";", row.Select(x => "\"" + x + "\"")));
                         if ((line + 1) % 1000 == 0)
                         {
                             UpdateStatusWindow(line + 1, string.Format("Generating Output"));

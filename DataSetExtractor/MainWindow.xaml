@@ -28,6 +28,7 @@
         <DataGrid x:Name="dataGridEntries" Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.RowSpan="3"  Grid.ColumnSpan="2" VerticalAlignment="Stretch" Width="Auto" PreviewMouseDoubleClick="dataGridEntries_PreviewMouseDoubleClick" AutoGenerateColumns="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding FileName, Mode=OneWay}" Header="File Name"/>
+                <DataGridTextColumn Binding="{Binding Type, Mode=OneWay}" Header="Type"/>
                 <DataGridTextColumn Binding="{Binding Source, Mode=OneWay}" Header="Path"/>
             </DataGrid.Columns>
         </DataGrid>

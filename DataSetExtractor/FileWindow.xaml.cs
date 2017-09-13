@@ -79,44 +79,54 @@ namespace DataSetExtractor
         {
             if (FileSetting != null)
             {
-                if (force || ColumnNames == null || !ColumnNames.Any())
+                try
                 {
-                    if (force || ColumnNames == null)
+                    if (force || ColumnNames == null || !ColumnNames.Any())
                     {
-                        ColumnNames = new List<string>();
-                    }
-                    string[] row = null;
-                    if (FileSetting.Type == FileType.Zip)
-                    {
-                        using (var zip = new ZipArchive(File.OpenRead(FileSetting.Source), ZipArchiveMode.Read))
+                        if (force || ColumnNames == null)
                         {
-                            var entry = zip.GetEntry(FileSetting.FileName);
-                            if (entry != null)
+                            ColumnNames = new List<string>();
+                        }
+                        string[] row = null;
+                        if (FileSetting.Type == FileType.Zip)
+                        {
+                            using (var zip = new ZipArchive(File.OpenRead(FileSetting.Source), ZipArchiveMode.Read))
                             {
-                                row = GetRow(new StreamReader(entry.Open(), Encoding.GetEncoding(FileSetting.FileEncoding)));
+                                var entry = zip.GetEntry(FileSetting.FileName);
+                                if (entry != null)
+                                {
+                                    row = GetRow(new StreamReader(entry.Open(), Encoding.GetEncoding(FileSetting.FileEncoding)));
+                                }
                             }
                         }
+                        else
+                        {
+                            row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source + "/" + FileSetting.FileName), Encoding.GetEncoding(FileSetting.FileEncoding)));
+                        }
+                        ColumnNames.AddRange(row);
                     }
-                    else
-                    {
-                        row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source + "/" + FileSetting.FileName), Encoding.GetEncoding(FileSetting.FileEncoding)));
-                    }
-                    ColumnNames.AddRange(row);
                 }
-                comboBoxKeyColumn.Items.Clear();
-                comboBoxColumn.Items.Clear();
-                if (ColumnNames != null && ColumnNames.Any())
+                catch (System.IO.IOException ex)
                 {
-                    bool excelIndex = checkBoxExcelIndex.IsChecked == true;
-                    for (int i = 0; i < ColumnNames.Count; i++)
-                    {
-                        string columnIndex = (excelIndex) ? GetExcelColumnName(i + 1).PadRight(5) : (i + 1).ToString().PadRight(5);
-                        string columnName = (!string.IsNullOrEmpty(ColumnNames[i])) ? ColumnNames[i] : "NO NAME";
-                        comboBoxKeyColumn.Items.Add(string.Format("{0} - {1}", columnIndex, ColumnNames[i]));
-                        comboBoxColumn.Items.Add(string.Format("{0} - {1}", columnIndex, ColumnNames[i]));
-                    }
+                    MessageBox.Show(String.Format("Could not read file: {0}. Check if is is not open by another program or deleted.", FileSetting.Source + "/" + FileSetting.FileName), "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
                 }
-                comboBoxKeyColumn.SelectedIndex = FileSetting.KeyColumn.SourceNumber;
+                finally
+                {
+                    comboBoxKeyColumn.Items.Clear();
+                    comboBoxColumn.Items.Clear();
+                    if (ColumnNames != null && ColumnNames.Any())
+                    {
+                        bool excelIndex = checkBoxExcelIndex.IsChecked == true;
+                        for (int i = 0; i < ColumnNames.Count; i++)
+                        {
+                            string columnIndex = (excelIndex) ? GetExcelColumnName(i + 1).PadRight(5) : (i + 1).ToString().PadRight(5);
+                            string columnName = (!string.IsNullOrEmpty(ColumnNames[i])) ? ColumnNames[i] : "NO NAME";
+                            comboBoxKeyColumn.Items.Add(string.Format("{0} - {1}", columnIndex, ColumnNames[i]));
+                            comboBoxColumn.Items.Add(string.Format("{0} - {1}", columnIndex, ColumnNames[i]));
+                        }
+                    }
+                    comboBoxKeyColumn.SelectedIndex = FileSetting.KeyColumn.SourceNumber;
+                }
             }
         }
 
@@ -183,6 +193,10 @@ namespace DataSetExtractor
                 textBoxColumnName.Text = string.Empty;
                 textBoxColumnNumber.Text = (FileSetting.Output.Count + 1).ToString();
             }
+            if (dataGridColumns.SelectedItems != null && dataGridColumns.SelectedItems.Count > 0)
+            {
+                dataGridColumns.SelectedItem = null;
+            }
         }
 
         private void buttonSave_Click(object sender, RoutedEventArgs e)
@@ -199,10 +213,6 @@ namespace DataSetExtractor
         {
             FileSetting.KeyColumn.SourceNumber = comboBoxKeyColumn.SelectedIndex;
             FileSetting.FullRow = checkBoxFullRow.IsChecked == true;
-        }
-
-        private void dataGridColumns_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
         }
 
         private void comboBoxColumn_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -225,39 +235,7 @@ namespace DataSetExtractor
             return null;
         }
 
-        private void dataGridColumns_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var grid = (DataGrid)sender;
-            if (grid.SelectedIndex >= 0)
-            {
-                var item = FileSetting.Output[grid.SelectedIndex];
-                checkBoxtestEmpty.IsChecked = item.IsEmptyTest;
-                comboBoxColumn.SelectedIndex = item.SourceNumber;
-                textBoxColumnName.Text = item.Name;
-                textBoxColumnNumber.Text = (item.Number + 1).ToString();
-            }
-        }
 
-        private void dataGridColumns_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            var grid = (DataGrid)sender;
-            if (Key.Delete == e.Key)
-            {
-                var index = grid.SelectedIndex;
-                if (index >= 0 && index < FileSetting.Output.Count)
-                {
-                    FileSetting.Output.RemoveAt(index);
-                    for (int i = index; i < FileSetting.Output.Count; i++)
-                    {
-                        FileSetting.Output[i].Number--;
-                    }
-                }
-                textBoxColumnNumber.Text = (FileSetting.Output.Count + 1).ToString();
-                checkBoxFullRow.IsChecked = (FileSetting.Output.Count == 0);
-                RefreshGrid();
-            }
-
-        }
 
         private void buttonConfig_Click(object sender, RoutedEventArgs e)
         {
@@ -290,6 +268,69 @@ namespace DataSetExtractor
             }
         }
 
+        private void EditItem(DataGrid grid)
+        {
+            if (grid.SelectedIndex >= 0)
+            {
+                var item = FileSetting.Output[grid.SelectedIndex];
+                checkBoxtestEmpty.IsChecked = item.IsEmptyTest;
+                comboBoxColumn.SelectedIndex = item.SourceNumber;
+                textBoxColumnName.Text = item.Name;
+                textBoxColumnNumber.Text = (item.Number + 1).ToString();
+            }
+        }
+
+        private void DeleteItem(DataGrid grid)
+        {
+            var index = grid.SelectedIndex;
+            if (index >= 0 && index < FileSetting.Output.Count)
+            {
+                FileSetting.Output.RemoveAt(index);
+                for (int i = index; i < FileSetting.Output.Count; i++)
+                {
+                    FileSetting.Output[i].Number--;
+                }
+            }
+            textBoxColumnNumber.Text = (FileSetting.Output.Count + 1).ToString();
+            checkBoxFullRow.IsChecked = (FileSetting.Output.Count == 0);
+            RefreshGrid();
+        }
+
+        private void MoveUp(DataGrid grid)
+        {
+            var index = grid.SelectedIndex;
+            if (index >= 0 && index < FileSetting.Output.Count)
+            {
+                if (index > 0)
+                {
+                    FileSetting.Output[index].Number--;
+                    FileSetting.Output[index - 1].Number++;
+                    var item = FileSetting.Output[index];
+                    FileSetting.Output[index] = FileSetting.Output[index - 1];
+                    FileSetting.Output[index - 1] = item;
+                    RefreshGrid();
+                }
+            }
+        }
+
+        private void MoveDown(DataGrid grid)
+        {
+            var index = grid.SelectedIndex;
+            if (index >= 0 && index < FileSetting.Output.Count)
+            {
+                if (index < (FileSetting.Output.Count - 1))
+                {
+                    FileSetting.Output[index].Number++;
+                    FileSetting.Output[index + 1].Number--;
+                    var item = FileSetting.Output[index];
+                    FileSetting.Output[index] = FileSetting.Output[index + 1];
+                    FileSetting.Output[index + 1] = item;
+                    RefreshGrid();
+                }
+            }
+        }
+
+        // checkbox events
         private void checkBoxExcelIndex_Checked(object sender, RoutedEventArgs e)
         {
             ReadFirstRow();
@@ -300,6 +341,7 @@ namespace DataSetExtractor
             ReadFirstRow();
         }
 
+        // combobox events
         private void comboBoxEncoding_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (FileSetting != null && comboBoxEncoding.SelectedIndex >= 0 && comboBoxEncoding.SelectedItem != null)
@@ -310,6 +352,51 @@ namespace DataSetExtractor
                     FileSetting.FileEncoding = item.ID;
                     ReadFirstRow(true);
                 }
+            }
+        }
+
+        // Grid Events
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var grid = dataGridColumns;
+            MoveUp(grid);
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            var grid = dataGridColumns;
+            MoveDown(grid);
+        }
+
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            var grid = dataGridColumns;
+            EditItem(grid);
+        }
+
+        private void dataGridColumns_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+        }
+
+        private void dataGridColumns_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var grid = (DataGrid)sender;
+            //EditItem(grid);
+        }
+
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            var grid = dataGridColumns;
+            DeleteItem(grid);
+        }
+
+        private void dataGridColumns_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var grid = (DataGrid)sender;
+            if (Key.Delete == e.Key)
+            {
+                DeleteItem(grid);
             }
         }
     }
