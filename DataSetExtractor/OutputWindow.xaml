@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DataSetExtractor"
         mc:Ignorable="d"
-        Title="OutputWindow" Height="480" Width="640" WindowStartupLocation="CenterOwner">
+        Title="Output" Height="480" Width="640" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
@@ -17,7 +17,7 @@
             <RowDefinition Height="{DynamicResource GridRowStatic}"/>
         </Grid.RowDefinitions>
         <TextBox x:Name="textBoxKeyOutput" HorizontalAlignment="Stretch" Margin="5,5,5,4.5" VerticalAlignment="Stretch" Height="Auto" Width="Auto" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.ColumnSpan="4"/>
-        <Button x:Name="buttonRefresh" Content="Reload Text" Grid.Row="1"   HorizontalAlignment="Stretch" Margin="5,5.5,5.5,4.5" VerticalAlignment="Stretch" Width="Auto" Click="buttonRefresh_Click" />
-        <Button x:Name="buttonCopy" Content="Copy To Clipboard" Grid.Row="1"  Grid.Column="2" HorizontalAlignment="Stretch" Margin="4.5,5.5,5,4.5" VerticalAlignment="Stretch" Width="Auto" Click="buttonCopy_Click"/>
+        <Button x:Name="buttonRefresh" Content="Reload text" Grid.Row="1"   HorizontalAlignment="Stretch" Margin="5,5.5,5.5,4.5" VerticalAlignment="Stretch" Width="Auto" Click="buttonRefresh_Click" />
+        <Button x:Name="buttonCopy" Content="Copy to clipboard" Grid.Row="1"  Grid.Column="2" HorizontalAlignment="Stretch" Margin="4.5,5.5,5,4.5" VerticalAlignment="Stretch" Width="Auto" Click="buttonCopy_Click"/>
     </Grid>
 </Window>

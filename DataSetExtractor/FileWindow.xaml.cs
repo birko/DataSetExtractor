@@ -243,7 +243,8 @@ namespace DataSetExtractor
             var text = JsonConvert.SerializeObject(FileSetting, Formatting.Indented);
             OutputWindow window = new OutputWindow(text)
             {
-                Owner = this
+                Owner = this,
+                Title = "Config",
             };
             var result = window.ShowDialog();
             if (window.OutputText != text)

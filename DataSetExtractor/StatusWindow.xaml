@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DataSetExtractor"
         mc:Ignorable="d"
-        Title="StatusWindow" Height="115" Width="640" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Closed="Window_Closed" Closing="Window_Closing">
+        Title="Generating" Height="115" Width="640" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" Closed="Window_Closed" Closing="Window_Closing">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>

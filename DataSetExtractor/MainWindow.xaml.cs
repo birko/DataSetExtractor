@@ -27,6 +27,7 @@ namespace DataSetExtractor
         private int? keyLength = 8;
         private StatusWindow statusWindow = null;
         private string noDataConst = "*??##??*";
+        private string fisrtLineKeyConst = "########";
 
         public MainWindow()
         {
@@ -36,12 +37,13 @@ namespace DataSetExtractor
 
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            if (MessageBox.Show("An error occured. Wanna see more detail?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No) == MessageBoxResult.Yes)
+            if (MessageBox.Show("An error occured. Want to see more details?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No) == MessageBoxResult.Yes)
             {
                 var text = e.Exception.Message + "\n-------------\n" + e.Exception.StackTrace;
                 OutputWindow window = new OutputWindow(text)
                 {
-                    Owner = this
+                    Owner = this,
+                    Title = "Error"
                 };
                 var result = window.ShowDialog();
             }
@@ -320,7 +322,7 @@ namespace DataSetExtractor
                     }
                     IDictionary<string, IEnumerable<IEnumerable<string>>> finalData = new Dictionary<string, IEnumerable<IEnumerable<string>>>();
                     int lineIndex = 0;
-                    UpdateStatusWindow(lineIndex, string.Format("Start Processing items. Done: {0}", lineIndex));
+                    UpdateStatusWindow(lineIndex, string.Format("Start Processing items. Processed items: {0}", lineIndex));
                     foreach (var kvp in outputdata.OrderBy(x => x.Key))
                     {
                         List<string[]> rows = new List<string[]>();
@@ -332,30 +334,26 @@ namespace DataSetExtractor
                         for (int sectionIndex = 0; sectionIndex < sectionsCount; sectionIndex++)
                         {
                             var keyIndex = (_SelectedFiles[sectionIndex].FullRow) ? _SelectedFiles[sectionIndex].KeyColumn.SourceNumber : _SelectedFiles[sectionIndex].Output.FirstOrDefault(x => x.SourceNumber == _SelectedFiles[sectionIndex].KeyColumn.SourceNumber)?.Number ?? 0;
-                            var keyValue = (kvp.Value.ElementAt(sectionIndex).Count() > 0 && kvp.Value.ElementAt(sectionIndex).First().Count() > keyIndex) ? kvp.Value.ElementAt(sectionIndex).First().ElementAt(keyIndex) : kvp.Key;
                             for (int rowIndex = 0; rowIndex < maxRows; rowIndex++)
                             {
                                 string[] subrow = new string[maxColumns[sectionIndex]];
+                                // copy values and replace nodataconst
                                 if (kvp.Value.ElementAt(sectionIndex).Count() > rowIndex)
                                 {
                                     if (kvp.Value.ElementAt(sectionIndex).ElementAt(rowIndex).Count() > 0)
                                     {
                                         for (int valueIndex = 0; valueIndex < kvp.Value.ElementAt(sectionIndex).ElementAt(rowIndex).Count(); valueIndex++)
                                         {
-                                            subrow[valueIndex] = kvp.Value.ElementAt(sectionIndex).ElementAt(rowIndex).ElementAt(valueIndex).Replace(noDataConst, keyValue);
+                                            subrow[valueIndex] = kvp.Value.ElementAt(sectionIndex).ElementAt(rowIndex).ElementAt(valueIndex).Replace(noDataConst, "Bez dát");
                                         }
                                     }
-                                    else
-                                    {
-                                        subrow[keyIndex] = keyValue;
-                                    }
                                 }
+                                // is section has less rows than max rows  in all sections per key add no data sign
                                 else if (_SelectedFiles[sectionIndex].FullRow || _SelectedFiles[sectionIndex].Output.Any(x => x.SourceNumber == _SelectedFiles[sectionIndex].KeyColumn.SourceNumber))
                                 {
-                                    subrow[keyIndex] = keyValue;
                                     if (fullCheck.HasValue && fullCheck.Value)
                                     {
-                                        subrow[(keyIndex == 0 && subrow.Length > 0) ? keyIndex + 1 : 0] = "Bez dát";
+                                        subrow[0] = "Bez dát";
                                     }
                                 }
                                 rows[rowIndex] = rows[rowIndex].Concat(subrow).ToArray();
@@ -364,11 +362,11 @@ namespace DataSetExtractor
                         finalData.Add(kvp.Key, rows.ToArray());
                         if ((lineIndex + 1) % 1000 == 0)
                         {
-                            UpdateStatusWindow(lineIndex + 1, string.Format("Processing items. Done: {0}", lineIndex + 1));
+                            UpdateStatusWindow(lineIndex + 1, string.Format("Processing items. Processed items: {0}", lineIndex + 1));
                         }
                         lineIndex++;
                     }
-                    UpdateStatusWindow(lineIndex, string.Format("Done Processing items: {0}", lineIndex));
+                    UpdateStatusWindow(lineIndex, string.Format("Done Processing items. Total items: {0}", lineIndex));
                     return finalData;
                 }
                 else
@@ -399,7 +397,7 @@ namespace DataSetExtractor
             long lineIndex = 0;
             Dictionary<string, string> found = new Dictionary<string, string>();
             int lastlength = 0;
-            UpdateStatusWindow(sectionIndex, string.Format("Start Reading Dataset {0} items. Done: {1}", sectionIndex + 1, lineIndex));
+            UpdateStatusWindow(sectionIndex, string.Format("Start Reading Dataset {0} items. Processed items: {1}", sectionIndex + 1, lineIndex));
             foreach (var splitLine in reader.Parse())
             {
                 var isFisrtLine = (lineIndex == 0 && firstline.Value == true);
@@ -415,7 +413,7 @@ namespace DataSetExtractor
                     {
                         if (isFisrtLine)
                         {
-                            key = "########";// ensure fisrt line
+                            key = fisrtLineKeyConst;// ensure fisrt line
                         }
                         if (contains && !found.ContainsKey(key))
                         {
@@ -446,7 +444,7 @@ namespace DataSetExtractor
                 }
                 if ((lineIndex + 1) % 1000 == 0)
                 {
-                    UpdateStatusWindow(sectionIndex, string.Format("Reading Dataset {0} items. Done: {1}", sectionIndex + 1, lineIndex + 1));
+                    UpdateStatusWindow(sectionIndex, string.Format("Reading Dataset {0} items. Processed items: {1}", sectionIndex + 1, lineIndex + 1));
                 }
                 lineIndex++;
             }
@@ -462,11 +460,11 @@ namespace DataSetExtractor
                 data = InitDataItem(data, sectionIndex, notfounditem, datarow);
                 if ((lineIndex + 1) % 1000 == 0)
                 {
-                    UpdateStatusWindow(sectionIndex, string.Format("Reading Dataset {0} items. Done: {1}", sectionIndex + 1, lineIndex + 1));
+                    UpdateStatusWindow(sectionIndex, string.Format("Reading Dataset {0} items. Processed items: {1}", sectionIndex + 1, lineIndex + 1));
                 }
                 lineIndex++;
             }
-            UpdateStatusWindow(sectionIndex + 1, string.Format("Done Reading Dataset {0} items. Done: {1}", sectionIndex + 1, lineIndex));
+            UpdateStatusWindow(sectionIndex + 1, string.Format("Done Reading Dataset {0} items. Processed items: {1}", sectionIndex + 1, lineIndex));
         }
 
         private IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> InitDataItem(IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data, int sectionIndex, string key, IEnumerable<string> datarow)
@@ -511,7 +509,7 @@ namespace DataSetExtractor
                             {
                                 foreach (var row in kvp.Value)
                                 {
-                                    var o = "\"" + kvp.Key + "\";" + string.Join(";", row.Select(x => "\"" + x + "\""));
+                                    var o = "\"" + kvp.Key.Replace(fisrtLineKeyConst, "Key") + "\";" + string.Join(";", row.Select(x => "\"" + x + "\""));
                                     writer.WriteLine(o);
                                     if ((line + 1) % 1000 == 0)
                                     {
@@ -570,7 +568,7 @@ namespace DataSetExtractor
                 {
                     foreach (var row in kvp.Value)
                     {
-                        text.AppendLine("\"" + kvp.Key + "\";" + string.Join(";", row.Select(x => "\"" + x + "\"")));
+                        text.AppendLine("\"" + kvp.Key.Replace(fisrtLineKeyConst, "Key") + "\";" + string.Join(";", row.Select(x => "\"" + x + "\"")));
                         if ((line + 1) % 1000 == 0)
                         {
                             UpdateStatusWindow(line + 1, string.Format("Generating Output"));
@@ -693,7 +691,8 @@ namespace DataSetExtractor
             var text = JsonConvert.SerializeObject(_SelectedFiles, Formatting.Indented);
             OutputWindow window = new OutputWindow(text)
             {
-                Owner = this
+                Owner = this,
+                Title = "Config",
             };
             var result = window.ShowDialog();
             if (window.OutputText != text)
