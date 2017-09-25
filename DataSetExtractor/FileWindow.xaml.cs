@@ -106,9 +106,10 @@ namespace DataSetExtractor
                         ColumnNames.AddRange(row);
                     }
                 }
-                catch (System.IO.IOException ex)
+                catch (IOException ex)
                 {
-                    MessageBox.Show(String.Format("Could not read file: {0}. Check if is is not open by another program or deleted.", FileSetting.Source + "/" + FileSetting.FileName), "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                    var owner = (MainWindow)Owner;
+                    owner.ShowException(ex, (String.Format("Could not read file: {0}. Check if is is not open by another program or deleted.", FileSetting.Source + "/" + FileSetting.FileName)));
                 }
                 finally
                 {
@@ -263,7 +264,8 @@ namespace DataSetExtractor
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        var owner = (MainWindow)Owner;
+                        owner.ShowException(ex);
                     }
                 }
             }

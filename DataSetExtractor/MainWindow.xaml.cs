@@ -37,15 +37,25 @@ namespace DataSetExtractor
 
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            if (MessageBox.Show("An error occured. Want to see more details?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No) == MessageBoxResult.Yes)
+            Exception ex = e.Exception;
+            ShowException(ex);
+        }
+
+        public void ShowException(Exception ex, string message = null)
+        {
+            if (ex != null && MessageBox.Show((!String.IsNullOrEmpty(message)) ? message : "An error occured. Want to see more details?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No) == MessageBoxResult.Yes)
             {
-                var text = e.Exception.Message + "\n-------------\n" + e.Exception.StackTrace;
+                var text = ex.Message + "\n-------------\n" + ex.StackTrace;
                 OutputWindow window = new OutputWindow(text)
                 {
                     Owner = this,
                     Title = "Error"
                 };
                 var result = window.ShowDialog();
+            }
+            else if (ex == null)
+            {
+                MessageBox.Show("An error occured. Want to see more details?", "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
             }
         }
 
@@ -94,7 +104,7 @@ namespace DataSetExtractor
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Wrong File", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    ShowException(ex);
                 }
                 finally
                 {
@@ -304,9 +314,9 @@ namespace DataSetExtractor
                         }
                         UpdateStatusWindow(i + 1, string.Format("Done Processing File: {0}", i + 1));
                     }
-                    catch (System.IO.IOException ex)
+                    catch (IOException ex)
                     {
-                        MessageBox.Show(String.Format("Could not read file: {0}. Check if is is not open by another program or deleted.", item.Source + "/" + item.FileName), "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                        ShowException(ex, String.Format("Could not read file: {0}. Check if is is not open by another program or deleted.", item.Source + "/" + item.FileName));
                     }
                 }
                 var outputdata = data.Where(ico => ico.Value.Any(section => section != null && section.Any(row => row != null && row.Any(value => !string.IsNullOrEmpty(value)))));
@@ -722,7 +732,7 @@ namespace DataSetExtractor
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        ShowException(ex);
                     }
                 }
             }
