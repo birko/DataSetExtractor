@@ -43,7 +43,7 @@ namespace DataSetExtractor
 
         public void ShowException(Exception ex, string message = null)
         {
-            if (ex != null && MessageBox.Show((!String.IsNullOrEmpty(message)) ? message : "An error occured. Want to see more details?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No) == MessageBoxResult.Yes)
+            if (ex != null && MessageBox.Show(((!String.IsNullOrEmpty(message)) ? message : "An error occured.") + " Want to see more details?", "Error", MessageBoxButton.YesNo, MessageBoxImage.Error, MessageBoxResult.No) == MessageBoxResult.Yes)
             {
                 var text = ex.Message + "\n-------------\n" + ex.StackTrace;
                 OutputWindow window = new OutputWindow(text)
