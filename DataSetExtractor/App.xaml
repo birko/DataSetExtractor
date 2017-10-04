@@ -5,8 +5,11 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <Thickness x:Key="CommonMargin">5,5,5,5</Thickness>
+        <Thickness x:Key="CellMargin">5,0</Thickness>
+        <Thickness x:Key="CellPadding">5,1</Thickness>
         <GridLength x:Key="GridRowStatic">40</GridLength>
         <GridLength x:Key="GridRowStaticLarger">60</GridLength>
         <GridLength x:Key="GridColumnStatic">130</GridLength>
+        <GridLength x:Key="GridColumnDoubleStatic">260</GridLength>
     </Application.Resources>
 </Application>

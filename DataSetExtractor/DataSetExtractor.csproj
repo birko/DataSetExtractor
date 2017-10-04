@@ -60,9 +60,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ColumnWindow.xaml.cs">
+      <DependentUpon>ColumnWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FileWindow.xaml.cs">
       <DependentUpon>FileWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\ColumnSetting.cs" />
     <Compile Include="Model\DataSet.cs" />
     <Compile Include="Model\FileSetting.cs" />
     <Compile Include="OutputWindow.xaml.cs">
@@ -72,6 +76,10 @@
       <DependentUpon>StatusWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Tools\CsvParser.cs" />
+    <Page Include="ColumnWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="FileWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

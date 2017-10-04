@@ -36,24 +36,31 @@
         <Button x:Name="buttonDataSetLoad" Content="Load source files" Grid.Column="4" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonDataSetLoad_Click" ToolTip="Select file to process"/>
         <Label x:Name="labelSecectedFiles" Grid.Row="3" Grid.ColumnSpan="4" Content="Selected files (Double Click for more options)" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="left" VerticalContentAlignment="Center" Margin="{DynamicResource CommonMargin}"/>
         <Button x:Name="buttonSelectFile" Content="Select file to process" Grid.Row="2"  Grid.Column="4" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" Click="buttonSelectFile_Click"/>
-        <DataGrid x:Name="dataGridSelectedFiles" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="4" Grid.Column="1" VerticalAlignment="Stretch" Width="Auto" CanUserAddRows="False" MouseDoubleClick="dataGridSelectedFiles_MouseDoubleClick" Grid.ColumnSpan="4" PreviewKeyDown="dataGridSelectedFiles_PreviewKeyDown" AutoGenerateColumns="False" >
+        <DataGrid x:Name="dataGridSelectedFiles" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" Grid.Row="4" Grid.Column="1" VerticalAlignment="Stretch" Width="Auto" CanUserAddRows="False" MouseDoubleClick="dataGridSelectedFiles_MouseDoubleClick" Grid.ColumnSpan="4" PreviewKeyDown="dataGridSelectedFiles_PreviewKeyDown" AutoGenerateColumns="False">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Edit" VerticalAlignment="Stretch" Width="Auto" HorizontalAlignment="Stretch" Height="Auto" Click="Button_Click_1"/>
+                            <Button Content="Columns" VerticalAlignment="Stretch" Width="Auto" HorizontalAlignment="Stretch" Height="Auto" Click="Button_Click_2" Padding="{DynamicResource CellPadding}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Delete" VerticalAlignment="Stretch" Width="Auto" HorizontalAlignment="Stretch" Height="Auto" Click="Button_Click"/>
+                            <Button Content="Detail" VerticalAlignment="Stretch" Width="Auto" HorizontalAlignment="Stretch" Height="Auto" Click="Button_Click_1" Padding="{DynamicResource CellPadding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Delete" VerticalAlignment="Stretch" Width="Auto" HorizontalAlignment="Stretch" Height="Auto" Click="Button_Click" Padding="{DynamicResource CellPadding}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridCheckBoxColumn Binding="{Binding FullRow, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Header="Full Row" IsThreeState="False" />
-                <DataGridTextColumn Binding="{Binding Columns, Mode=OneWay }" Header="Columns" />
+                <DataGridTextColumn Binding="{Binding Columns, Mode=OneWay }" Header="Columns"/>
                 <DataGridTextColumn Binding="{Binding FileName, Mode=OneWay}" Header="File Name"/>
                 <DataGridTextColumn Binding="{Binding Source, Mode=OneWay}" Header="Path"/>
             </DataGrid.Columns>

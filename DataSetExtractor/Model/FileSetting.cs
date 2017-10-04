@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -116,6 +118,39 @@ namespace DataSetExtractor.Model
                 Output = fileSetting.Output;
                 FileEncoding = fileSetting.FileEncoding;
             }
+        }
+
+        public IEnumerable<string> GetRow()
+        {
+            StreamReader reader= null;
+            if (Type == FileType.Zip)
+            {
+                using (var zip = new ZipArchive(File.OpenRead(Source), ZipArchiveMode.Read))
+                {
+                    var entry = zip.GetEntry(FileName);
+                    if (entry != null)
+                    {
+                        reader =  new StreamReader(entry.Open(), Encoding.GetEncoding(FileEncoding));
+                    }
+                }
+            }
+            else
+            {
+                reader = new StreamReader(File.OpenRead(Source + "/" + FileName), Encoding.GetEncoding(FileEncoding));
+            }
+            string[] row = null;
+            if (reader != null)
+            {
+                var parser = new Tools.CsvParser(reader, ';');
+                foreach (var splitLine in parser.Parse())
+                {
+                    if (splitLine != null && splitLine.Count > 0)
+                    {
+                        return splitLine.ToArray();
+                    }
+                }
+            }
+            return row;
         }
     }
 }

@@ -114,7 +114,7 @@ namespace DataSetExtractor
                     {
                         throw e.Error;
                     }
-                    else
+                    else if(closeFunction != null)
                     {
                         closeFunction?.Invoke();
                     }

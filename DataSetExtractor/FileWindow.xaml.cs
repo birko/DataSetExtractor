@@ -87,23 +87,12 @@ namespace DataSetExtractor
                         {
                             ColumnNames = new List<string>();
                         }
-                        string[] row = null;
-                        if (FileSetting.Type == FileType.Zip)
+
+                        var row = FileSetting.GetRow();
+                        if (row != null && row.Any())
                         {
-                            using (var zip = new ZipArchive(File.OpenRead(FileSetting.Source), ZipArchiveMode.Read))
-                            {
-                                var entry = zip.GetEntry(FileSetting.FileName);
-                                if (entry != null)
-                                {
-                                    row = GetRow(new StreamReader(entry.Open(), Encoding.GetEncoding(FileSetting.FileEncoding)));
-                                }
-                            }
+                            ColumnNames.AddRange(row);
                         }
-                        else
-                        {
-                            row = GetRow(new StreamReader(File.OpenRead(FileSetting.Source + "/" + FileSetting.FileName), Encoding.GetEncoding(FileSetting.FileEncoding)));
-                        }
-                        ColumnNames.AddRange(row);
                     }
                 }
                 catch (IOException ex)
@@ -129,19 +118,6 @@ namespace DataSetExtractor
                     comboBoxKeyColumn.SelectedIndex = FileSetting.KeyColumn.SourceNumber;
                 }
             }
-        }
-
-        private static string[] GetRow(StreamReader reader)
-        {
-            var parser = new Tools.CsvParser(reader, ';');
-            foreach (var splitLine in parser.Parse())
-            {
-                if (splitLine != null && splitLine.Count > 0)
-                {
-                    return splitLine.ToArray();
-                }
-            }
-            return new string [0];
         }
 
         private void RefreshGrid()

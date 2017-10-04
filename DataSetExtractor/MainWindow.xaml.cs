@@ -633,7 +633,33 @@ namespace DataSetExtractor
         private void dataGridSelectedFiles_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var grid = (DataGrid)sender;
-            EditSelectedFiles(grid);
+            FileColumnSettings(grid);
+        }
+
+        private void FileColumnSettings(DataGrid grid)
+        {
+            var index = grid.SelectedIndex;
+            if (index >= 0 && index < _SelectedFiles.Count)
+            {
+                FileSetting fileSetting = _SelectedFiles[index];
+                var cloneFileSetting = (FileSetting)fileSetting.Clone();
+                if (fileSetting != null)
+                {
+                    ColumnWindow window = new ColumnWindow(fileSetting)
+                    {
+                        Owner = this
+                    };
+                    var result = window.ShowDialog();
+                    if (result == true)
+                    {
+                        RefreshGrid();
+                    }
+                    else
+                    {
+                        _SelectedFiles[index] = cloneFileSetting;
+                    }
+                }
+            }
         }
 
         private void EditSelectedFiles(DataGrid grid)
@@ -679,6 +705,11 @@ namespace DataSetExtractor
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             EditSelectedFiles(dataGridSelectedFiles);
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            FileColumnSettings(dataGridSelectedFiles);
         }
 
         private void dataGridEntries_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
