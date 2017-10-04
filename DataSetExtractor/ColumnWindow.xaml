@@ -24,6 +24,6 @@
             </DataGrid.Columns>
         </DataGrid>
         <CheckBox x:Name="checkBoxSelectAll" Content="Select all" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True" Checked="checkBoxSelectAll_Checked" Unchecked="checkBoxSelectAll_Unchecked"/>
-        <Button x:Name="buttonSave" Content="Save" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1" VerticalAlignment="Stretch" Width="Auto" Click="buttonSave_Click"/>
+        <Button x:Name="buttonSave" Content="Save and Close" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1" VerticalAlignment="Stretch" Width="Auto" Click="buttonSave_Click"/>
     </Grid>
 </Window>
