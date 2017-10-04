@@ -125,13 +125,11 @@ namespace DataSetExtractor.Model
             StreamReader reader= null;
             if (Type == FileType.Zip)
             {
-                using (var zip = new ZipArchive(File.OpenRead(Source), ZipArchiveMode.Read))
+                var zip = new ZipArchive(File.OpenRead(Source), ZipArchiveMode.Read);
+                var entry = zip.GetEntry(FileName);
+                if (entry != null)
                 {
-                    var entry = zip.GetEntry(FileName);
-                    if (entry != null)
-                    {
-                        reader =  new StreamReader(entry.Open(), Encoding.GetEncoding(FileEncoding));
-                    }
+                    reader = new StreamReader(entry.Open(), Encoding.GetEncoding(FileEncoding));
                 }
             }
             else
