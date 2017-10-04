@@ -57,6 +57,7 @@ namespace DataSetExtractor
                     }
                 }
             }
+            CheckSelectAll();
             RefreshGrid();
         }
 
@@ -155,11 +156,23 @@ namespace DataSetExtractor
                     Columns[index].Export = !Columns[index].Export;
                 }
             }
-            _lock = true;
-            checkBoxSelectAll.IsChecked = Columns.All(x => x.Export);
-            _lock = false;
             SaveFileSettings();
+            CheckSelectAll();
             RefreshGrid();
+        }
+
+        private void CheckSelectAll()
+        {
+            _lock = true;
+            if (Columns != null && Columns.Any())
+            {
+                checkBoxSelectAll.IsChecked = Columns.All(x => x.Export);
+            }
+            else
+            {
+                checkBoxSelectAll.IsChecked = false;
+            }
+            _lock = false;
         }
     }
 }
