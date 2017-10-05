@@ -1,0 +1,21 @@
+﻿<Window x:Class="DataSetExtractor.InputWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DataSetExtractor"
+        mc:Ignorable="d"
+        Title="Input" Height="110" Width="300" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+        </Grid.RowDefinitions>
+        <TextBox x:Name="textBoxValue" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" TextWrapping="Wrap" Text="" VerticalAlignment="Stretch" Width="Auto" MaxLines="1" Grid.ColumnSpan="2"/>
+        <Button x:Name="buttonSave" Content="Save and Close" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1" VerticalAlignment="Stretch" Width="Auto" Click="buttonSave_Click"/>
+    </Grid>
+</Window>

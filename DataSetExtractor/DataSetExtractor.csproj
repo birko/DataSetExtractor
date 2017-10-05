@@ -66,6 +66,9 @@
     <Compile Include="FileWindow.xaml.cs">
       <DependentUpon>FileWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="InputWindow.xaml.cs">
+      <DependentUpon>InputWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Model\ColumnSetting.cs" />
     <Compile Include="Model\DataSet.cs" />
     <Compile Include="Model\FileSetting.cs" />
@@ -76,11 +79,16 @@
       <DependentUpon>StatusWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Tools\CsvParser.cs" />
+    <Compile Include="Tools\Helper.cs" />
     <Page Include="ColumnWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FileWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InputWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

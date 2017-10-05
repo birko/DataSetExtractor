@@ -122,24 +122,25 @@ namespace DataSetExtractor.Model
 
         public IEnumerable<string> GetRow()
         {
-            StreamReader reader= null;
+            StreamReader reader = null;
+            Encoding encoding = Encoding.GetEncoding(FileEncoding);
             if (Type == FileType.Zip)
             {
                 var zip = new ZipArchive(File.OpenRead(Source), ZipArchiveMode.Read);
                 var entry = zip.GetEntry(FileName);
                 if (entry != null)
                 {
-                    reader = new StreamReader(entry.Open(), Encoding.GetEncoding(FileEncoding));
+                    reader = new StreamReader(entry.Open(), encoding);
                 }
             }
             else
             {
-                reader = new StreamReader(File.OpenRead(Source + "/" + FileName), Encoding.GetEncoding(FileEncoding));
+                reader = new StreamReader(File.OpenRead(Source + "/" + FileName), encoding);
             }
             string[] row = null;
             if (reader != null)
             {
-                var parser = new Tools.CsvParser(reader, ';');
+                var parser = new Tools.CsvParser(reader, ';', encoding: encoding);
                 foreach (var splitLine in parser.Parse())
                 {
                     if (splitLine != null && splitLine.Count > 0)

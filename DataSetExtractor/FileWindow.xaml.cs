@@ -1,4 +1,5 @@
 ﻿using DataSetExtractor.Model;
+using DataSetExtractor.Tools;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,16 +20,7 @@ using System.Windows.Shapes;
 
 namespace DataSetExtractor
 {
-    class EncodingItem
-    {
-        public int ID { get; set; }
-        public string Name { get; set; }
 
-        public override string ToString()
-        {
-            return string.Format("{0} - {1}", ID.ToString().PadRight(5,' '), Name);
-        }
-    }
     /// <summary>
     /// Interaction logic for FileWindow.xaml
     /// </summary>
@@ -53,26 +45,9 @@ namespace DataSetExtractor
             textBoxColumnNumber.Text = (FileSetting.Output.Count + 1).ToString();
             RefreshGrid();
             ReadFirstRow();
-            var items = Encoding.GetEncodings().Select(x => new EncodingItem { ID = x.CodePage, Name = x.DisplayName });
+            var items = Helper.GetEncodingList();
             comboBoxEncoding.ItemsSource = items;
             comboBoxEncoding.SelectedValue = items.FirstOrDefault(x => x.ID == FileSetting.FileEncoding).ID;
-        }
-
-        private string GetExcelColumnName(int columnNumber)
-        {
-            int dividend = columnNumber;
-            string columnName = String.Empty;
-            int modulo;
-            int positionA = 'A';
-            int AlphabetLength = 'Z' - positionA + 1;
-            while (dividend > 0)
-            {
-                modulo = (dividend - 1) % AlphabetLength;
-                columnName = Convert.ToChar(positionA + modulo).ToString() + columnName;
-                dividend = (dividend - modulo) / AlphabetLength;
-            }
-
-            return columnName;
         }
 
         private void ReadFirstRow(bool force = false)
@@ -109,7 +84,7 @@ namespace DataSetExtractor
                         bool excelIndex = checkBoxExcelIndex.IsChecked == true;
                         for (int i = 0; i < ColumnNames.Count; i++)
                         {
-                            string columnIndex = (excelIndex) ? GetExcelColumnName(i + 1).PadRight(5) : (i + 1).ToString().PadRight(5);
+                            string columnIndex = (excelIndex) ? Helper.GetExcelColumnName(i + 1).PadRight(5) : (i + 1).ToString().PadRight(5);
                             string columnName = (!string.IsNullOrEmpty(ColumnNames[i])) ? ColumnNames[i] : "NO NAME";
                             comboBoxKeyColumn.Items.Add(string.Format("{0} - {1}", columnIndex, ColumnNames[i]));
                             comboBoxColumn.Items.Add(string.Format("{0} - {1}", columnIndex, ColumnNames[i]));

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DataSetExtractor"
         mc:Ignorable="d"
-        Title="Columns" Height="320" Width="480" WindowStartupLocation="CenterOwner">
+        Title="Columns" Height="320" Width="540" WindowStartupLocation="CenterOwner">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="{DynamicResource GridColumnStatic}"/>
@@ -15,15 +15,21 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="80*"/>
             <RowDefinition Height="{DynamicResource GridRowStatic}"/>
+            <RowDefinition Height="{DynamicResource GridRowStatic}"/>
         </Grid.RowDefinitions>
         <DataGrid x:Name="dataGridColumns" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" Height="Auto" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" CanUserAddRows="False" AutoGenerateColumns="False" SelectionMode="Single" SelectionUnit="Cell" MouseLeftButtonUp="dataGridColumns_MouseLeftButtonUp">
             <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding ColumnIndex, Mode=OneWay }" Header="Index" />
                 <DataGridCheckBoxColumn Binding="{Binding Key, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Header="Key" IsThreeState="False" />
                 <DataGridCheckBoxColumn Binding="{Binding Export, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Header="Export" IsThreeState="False" />
-                <DataGridTextColumn Binding="{Binding Column, Mode=OneWay }" Header="Column" />
+                <DataGridCheckBoxColumn Binding="{Binding EmptyTest, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Header="Test Empty" IsThreeState="False" />
+                <DataGridTextColumn Binding="{Binding DisplayColumn, Mode=OneWay }" Header="Column" />
             </DataGrid.Columns>
         </DataGrid>
         <CheckBox x:Name="checkBoxSelectAll" Content="Select all" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True" Checked="checkBoxSelectAll_Checked" Unchecked="checkBoxSelectAll_Unchecked"/>
-        <Button x:Name="buttonSave" Content="Save and Close" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1" VerticalAlignment="Stretch" Width="Auto" Click="buttonSave_Click"/>
+        <CheckBox x:Name="checkBoxExcelIndex" Content="Excel Index" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsChecked="True" Checked="checkBoxExcelIndex_Checked" Unchecked="checkBoxExcelIndex_Unchecked"/>
+        <Label Content="Source Encoding: " HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Grid.Row="2"/>
+        <ComboBox x:Name="comboBoxEncoding" Grid.Column="1" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" VerticalAlignment="Stretch" Width="Auto" IsEditable="False" SelectedValuePath="ID" Grid.Row="2" SelectionChanged="comboBoxEncoding_SelectionChanged"/>
+        <Button x:Name="buttonSave" Content="Save and Close" Grid.Column="2" HorizontalAlignment="Stretch" Margin="{DynamicResource CommonMargin}" Grid.Row="2" VerticalAlignment="Stretch" Width="Auto" Click="buttonSave_Click"/>
     </Grid>
 </Window>

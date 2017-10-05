@@ -1,4 +1,5 @@
 ﻿using DataSetExtractor.Model;
+using DataSetExtractor.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,8 +29,11 @@ namespace DataSetExtractor
         {
             InitializeComponent();
             Settings = setting;
-            if(Settings != null)
+            var items = Helper.GetEncodingList();
+            comboBoxEncoding.ItemsSource = items;
+            if (Settings != null)
             {
+                comboBoxEncoding.SelectedValue = items.FirstOrDefault(x => x.ID == Settings.FileEncoding).ID;
                 var row = Settings.GetRow();
                 if (row != null)
                 {
@@ -39,21 +43,26 @@ namespace DataSetExtractor
                         Export = true,
                         Key = false
                     }).ToArray();
+                    bool excelIndex = checkBoxExcelIndex.IsChecked == true;
                     for (int i = 0; i < Columns.Length; i++)
                     {
                         Columns[i].Index = i;
-                        if (Settings.FullRow)
-                        {
-                            Columns[i].Key = i == 0;
-                        }
-                        else if (Settings.Output != null && Settings.Output.Any())
+                        Columns[i].ColumnIndex = (excelIndex) ? Helper.GetExcelColumnName(i + 1).PadRight(5) : (i + 1).ToString().PadRight(5);
+                        if (Settings.Output != null && Settings.Output.Any())
                         {
                             if (Settings.KeyColumn.SourceNumber == i)
                             {
                                 Columns[i].Key = true;
                             }
-                            Columns[i].Export = Settings.Output.Any(x => x.SourceNumber == i);
+                            var col = Settings.Output.FirstOrDefault(x => x.SourceNumber == i);
+                            Columns[i].Export = col != null;
+                            Columns[i].ColumnName = col?.Name;
+                            Columns[i].EmptyTest = col?.IsEmptyTest == true;
                         }
+                    }
+                    if(Columns != null && Columns.Any() && !Columns.Any(x=>x.Key))
+                    {
+                        Columns[0].Key = true;
                     }
                 }
             }
@@ -78,7 +87,7 @@ namespace DataSetExtractor
         {
             if (Settings != null && Columns != null)
             {
-                Settings.FullRow = Columns.All(x => x.Export);
+                Settings.FullRow = Columns.All(x => x.Export && !x.EmptyTest && string.IsNullOrEmpty(x.ColumnName));
                 var key = Columns.First(x => x.Key);
                 Settings.KeyColumn = new Column() {
                     SourceName = key.Column,
@@ -92,10 +101,10 @@ namespace DataSetExtractor
                     {
                         Settings.Output.Add(new OutputColumn()
                         {
-                            IsEmptyTest = false,
-                            Name = c.Column,
+                            IsEmptyTest = c.EmptyTest,
+                            Name = c.DisplayColumn,
                             Number = i,
-                            SourceNumber =c.Index,
+                            SourceNumber = c.Index,
                             SourceName = c.Column
                         });
                         i++;
@@ -143,7 +152,7 @@ namespace DataSetExtractor
             {
                 var cell = dataGridColumns.SelectedCells.First();
                 var index = (cell.Item as ColumnSetting).Index;
-                if (cell.Column.DisplayIndex == 0)
+                if (cell.Column.DisplayIndex == 1)
                 {
                     foreach (var c in Columns)
                     {
@@ -151,9 +160,27 @@ namespace DataSetExtractor
                     }
                     Columns[index].Key = true;
                 }
-                if (cell.Column.DisplayIndex == 1)
+                if (cell.Column.DisplayIndex == 2)
                 {
                     Columns[index].Export = !Columns[index].Export;
+                }
+                if (cell.Column.DisplayIndex == 3)
+                {
+                    Columns[index].EmptyTest = !Columns[index].EmptyTest;
+                }
+                if (cell.Column.DisplayIndex == 4)
+                {
+                    InputWindow window = new InputWindow()
+                    {
+                        Owner = this,
+                        Title = "Name",
+                        Value = Columns[index].DisplayColumn
+                    };
+                    var result = window.ShowDialog();
+                    if (result == true)
+                    {
+                        Columns[index].DisplayColumn = window.Value?.Trim();
+                    }
                 }
             }
             SaveFileSettings();
@@ -173,6 +200,55 @@ namespace DataSetExtractor
                 checkBoxSelectAll.IsChecked = false;
             }
             _lock = false;
+        }
+
+        private void checkBoxExcelIndex_Checked(object sender, RoutedEventArgs e)
+        {
+            SetColumnIndex(true);
+        }
+
+        private void checkBoxExcelIndex_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SetColumnIndex(false);
+        }
+
+        private void SetColumnIndex(bool excelIndex)
+        {
+            if (Columns != null && Columns.Any())
+            {
+                int i = 0;
+                foreach (var c in Columns)
+                {
+                    c.ColumnIndex = (excelIndex) ? Helper.GetExcelColumnName(i + 1).PadRight(5) : (i + 1).ToString().PadRight(5);
+                    i++;
+                }
+            }
+            RefreshGrid();
+        }
+
+        private void comboBoxEncoding_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (Settings != null && comboBoxEncoding.SelectedIndex >=0 && comboBoxEncoding.SelectedItem != null)
+            {
+                var item = (EncodingItem)comboBoxEncoding.SelectedItem;
+                if (Settings.FileEncoding != item.ID)
+                {
+                    Settings.FileEncoding = item.ID;
+                    if (Columns != null && Columns.Any())
+                    {
+                        var row = Settings.GetRow().ToArray();
+                        if (row != null && Columns.Length == row.Length)
+                        {
+                            for (int i = 0; i < row.Length; i++)
+                            {
+                                Columns[i].Column = row[i];
+                            }
+                        }
+                    }
+                    SaveFileSettings();
+                }
+            }
+            RefreshGrid();
         }
     }
 }
