@@ -346,10 +346,10 @@ namespace DataSetExtractor
                         {
                             rows.Add(new string[0]);
                         }
-                        Parallel.For(0, sectionsCount, (sectionIndex) =>
+                        for(int sectionIndex = 0; sectionIndex < sectionsCount; sectionIndex ++)
                         {
                             var keyIndex = (_SelectedFiles[sectionIndex].FullRow) ? _SelectedFiles[sectionIndex].KeyColumn.SourceNumber : _SelectedFiles[sectionIndex].Output.FirstOrDefault(x => x.SourceNumber == _SelectedFiles[sectionIndex].KeyColumn.SourceNumber)?.Number ?? 0;
-                            Parallel.For(0, maxRows, (rowIndex) =>
+                            for( int rowIndex  = 0; rowIndex < maxRows; rowIndex ++)
                             {
                                 string[] subrow = new string[maxColumns[sectionIndex]];
                                 // copy values and replace nodataconst
@@ -377,8 +377,8 @@ namespace DataSetExtractor
                                     UpdateStatusWindow(lineIndex + 1, string.Format("Processing items. Processed items: {0}", lineIndex + 1));
                                 }
                                 lineIndex++;
-                            });
-                        });
+                            };
+                        }
                         finalData.Add(kvp.Key, rows.ToArray());
                     });
                     UpdateStatusWindow(lineIndex, string.Format("Done Processing items. Total items: {0}", lineIndex));
