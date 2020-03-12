@@ -277,7 +277,9 @@ namespace DataSetExtractor
         {
             if (generate)
             {
-                var keyList = (keysText != null) ? keysText.Split(new[] { ",", "\n", ";" }, StringSplitOptions.RemoveEmptyEntries)
+                IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data = new Dictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>>();
+                var count = _SelectedFiles.Count;
+                var keyList = (keysText != null) ? keysText.Split(new[] { ",", "\n", "\r", ";" }, StringSplitOptions.RemoveEmptyEntries)
                        .Select(x =>
                        {
                            var result = x?.Trim().Replace(" ", string.Empty);
@@ -292,8 +294,6 @@ namespace DataSetExtractor
                 {
                     keyList = keyList.Where(x => x.Length == keyLength).ToArray();
                 }
-                IDictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>> data = new Dictionary<string, IEnumerable<IEnumerable<IEnumerable<string>>>>();
-                var count = _SelectedFiles.Count;
                 Parallel.For(0, count, (i) =>
                 {
                     var item = _SelectedFiles[i];
@@ -326,6 +326,7 @@ namespace DataSetExtractor
                 var outputdata = data.Where(ico => ico.Value.Any(section => section != null && section.Any(row => row != null && row.Any(value => !string.IsNullOrEmpty(value)))));
                 if (outputdata.Any())
                 {
+                    IDictionary<string, IEnumerable<IEnumerable<string>>> finalData = new Dictionary<string, IEnumerable<IEnumerable<string>>>();
                     int max = outputdata.Sum(x => x.Value.Max( y=> y.Count()));
                     MaxStatusWindow(max);
                     var rowItem = outputdata.First();
@@ -335,7 +336,6 @@ namespace DataSetExtractor
                     {
                         maxColumns[sectionIndex] = outputdata.Max(x => (x.Value.Count() > sectionIndex) ? (x.Value.ElementAt(sectionIndex).Count() > 0) ? x.Value.ElementAt(sectionIndex).Max(rows => (rows != null) ? rows.Count() : 0) : 0 : 0);
                     }
-                    IDictionary<string, IEnumerable<IEnumerable<string>>> finalData = new Dictionary<string, IEnumerable<IEnumerable<string>>>();
                     int lineIndex = 0;
                     UpdateStatusWindow(lineIndex, string.Format("Start Processing items. Processed items: {0}", lineIndex));
                     Parallel.ForEach(outputdata.OrderBy(x => x.Key), (kvp) =>
